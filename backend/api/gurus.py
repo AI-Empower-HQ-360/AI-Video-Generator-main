@@ -4,6 +4,8 @@ import os
 import asyncio
 import json
 from services.ai_service import AIService
+from services.cache_service import cache_response, cached
+from services.performance_monitor import monitor_function_performance
 from workflow_assignment import ChatGPTWorkflowManager
 
 gurus_bp = Blueprint('gurus', __name__)
@@ -172,6 +174,8 @@ def spiritual_guidance_stream():
     return ask_guru_stream()
 
 @gurus_bp.route('/workflows', methods=['GET'])
+@cache_response(timeout=3600, key_prefix='guru_workflows')
+@monitor_function_performance('get_workflows')
 def get_available_workflows():
     """Get all available AI Guru workflows and their ChatGPT configurations"""
     if not workflow_manager:

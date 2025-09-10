@@ -48,3 +48,10 @@ openai>=1.0.0
 python-dotenv==1.0.0
 aiohttp==3.9.1
 asyncio==3.4.3
+
+# Performance Monitoring
+psutil==5.9.6
+
+# Video Processing (optional - for video transcoding)
+# Note: ffmpeg must be installed separately on the system
+# pip install imageio-ffmpeg  # For Python wrapper
