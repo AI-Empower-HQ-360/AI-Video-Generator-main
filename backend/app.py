@@ -5,6 +5,29 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# Load configuration
+from config.config import config
+config_name = os.environ.get('FLASK_ENV', 'development')
+app.config.from_object(config[config_name])
+
+# Initialize database
+from models.database import db
+db.init_app(app)
+
+# Initialize services
+from services.cache_service import cache
+from services.video_service import video_service
+from services.performance_monitor import performance_monitor
+
+cache.init_app(app)
+video_service.init_app(app)
+performance_monitor.init_app(app)
+
+# Store services in app for access in routes
+app.cache = cache
+app.video_service = video_service
+app.performance_monitor = performance_monitor
+
 # Configure CORS
 CORS(app, resources={
     r"/*": {
@@ -14,10 +37,6 @@ CORS(app, resources={
     }
 })
 
-# Configuration
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'spiritual-wisdom-key')
-app.config['DEBUG'] = True
-
 # Import API routes
 from api.gurus import gurus_bp
 from api.users import users_bp
@@ -25,6 +44,8 @@ from api.sessions import sessions_bp
 from api.slokas import slokas_bp
 from api.durable_endpoints import durable_bp
 from api.whisper_endpoints import whisper_bp
+from api.video_endpoints import video_bp
+from api.performance_endpoints import performance_bp
 
 # Configure CORS for Durable
 CORS(app, resources={
@@ -45,15 +66,29 @@ app.register_blueprint(users_bp, url_prefix='/api/users')
 app.register_blueprint(sessions_bp, url_prefix='/api/sessions')
 app.register_blueprint(slokas_bp, url_prefix='/api/slokas')
 app.register_blueprint(whisper_bp, url_prefix='/api/whisper')  # New Whisper endpoints
+app.register_blueprint(video_bp, url_prefix='/api/videos')  # New video endpoints
+app.register_blueprint(performance_bp, url_prefix='/api/performance')  # Performance monitoring
 app.register_blueprint(durable_bp)  # No url_prefix as it has its own
 
 @app.route('/')
 def home():
     return jsonify({
         'message': 'AI Empower Heart Spiritual Platform API',
-        'version': '1.0.0',
+        'version': '2.0.0',  # Updated for performance optimizations
         'status': 'active',
-        'available_gurus': ['karma', 'bhakti', 'meditation', 'yoga', 'spiritual', 'sloka'],
+        'features': {
+            'gurus': ['karma', 'bhakti', 'meditation', 'yoga', 'spiritual', 'sloka'],
+            'video_streaming': True,
+            'adaptive_bitrate': True,
+            'cdn_integration': True,
+            'performance_monitoring': True,
+            'caching': True
+        },
+        'endpoints': {
+            'videos': '/api/videos',
+            'performance': '/api/performance',
+            'health': '/api/performance/health'
+        },
         'timestamp': datetime.utcnow().isoformat()
     })
 
@@ -62,7 +97,10 @@ def health_check():
     return jsonify({
         'status': 'healthy', 
         'service': 'spiritual-guidance-platform',
-        'gurus_available': True
+        'gurus_available': True,
+        'database_connected': True,
+        'cache_enabled': True,
+        'video_processing': True
     })
 
 @app.route('/ai-gurus/spiritual-guru')
