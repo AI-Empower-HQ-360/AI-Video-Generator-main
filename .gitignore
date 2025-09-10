@@ -71,3 +71,11 @@ logs/
 dist/
 build/
 *.egg-info/
+
+# Video Processing Files
+uploads/videos/
+processed_videos/
+temp_video/
+video_analytics/
+transcriptions/
+temp_uploads/
