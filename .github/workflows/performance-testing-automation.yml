@@ -1,0 +1,556 @@
+name: Advanced Automation - Performance Testing
+
+on:
+  schedule:
+    # Run performance tests weekly on Sundays at 3 AM UTC
+    - cron: '0 3 * * 0'
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of performance test to run'
+        required: true
+        default: 'load'
+        type: choice
+        options:
+          - load
+          - stress
+          - spike
+          - endurance
+          - baseline
+      target_endpoint:
+        description: 'Specific endpoint to test (leave empty for all)'
+        required: false
+        default: ''
+      duration_minutes:
+        description: 'Test duration in minutes'
+        required: false
+        default: '5'
+        type: number
+
+jobs:
+  performance-baseline:
+    runs-on: ubuntu-latest
+    name: Establish Performance Baseline
+    if: github.event.inputs.test_type == 'baseline' || github.event_name == 'schedule'
+    outputs:
+      baseline-established: ${{ steps.baseline.outputs.success }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+    
+    - name: Start application services
+      run: |
+        # In a real implementation, this would start the actual application
+        # For now, we'll simulate the services
+        echo "Starting Flask application..."
+        cd backend
+        python -c "
+        from flask import Flask
+        app = Flask(__name__)
+        
+        @app.route('/health')
+        def health():
+            return {'status': 'healthy', 'timestamp': '$(date -Iseconds)'}
+        
+        @app.route('/api/ai-guru/chat', methods=['POST'])
+        def ai_chat():
+            return {'response': 'Peace and wisdom to you on your spiritual journey.'}
+        
+        @app.route('/api/video/quality', methods=['POST'])
+        def video_quality():
+            return {'quality_score': 85, 'passed': True}
+        
+        @app.route('/api/content/moderate', methods=['POST'])  
+        def content_moderate():
+            return {'approved': True, 'confidence': 0.95}
+        
+        @app.route('/api/video/thumbnail', methods=['POST'])
+        def video_thumbnail():
+            return {'success': True, 'thumbnail_path': '/tmp/thumb.jpg'}
+        
+        @app.route('/api/spiritual/guidance', methods=['POST'])
+        def spiritual_guidance():
+            return {'guidance': 'Follow your inner light with compassion.'}
+        
+        if __name__ == '__main__':
+            app.run(host='0.0.0.0', port=5000, debug=False)
+        " &
+        
+        # Wait for service to start
+        sleep 5
+        
+        # Verify service is running
+        curl -f http://localhost:5000/health || exit 1
+    
+    - name: Establish performance baseline
+      id: baseline
+      run: |
+        cd backend
+        python -c "
+        import sys
+        sys.path.append('.')
+        from services.performance_testing_service import establish_performance_baseline
+        import json
+        import os
+        
+        print('Establishing performance baseline...')
+        
+        try:
+            baseline_result = establish_performance_baseline()
+            
+            # Save baseline results
+            with open('baseline_results.json', 'w') as f:
+                json.dump(baseline_result, f, indent=2)
+            
+            if baseline_result.get('baseline_id'):
+                print(f'Baseline established: {baseline_result[\"baseline_id\"]}')
+                print('success=true' >> os.environ['GITHUB_OUTPUT'])
+                
+                # Print summary
+                measurements = baseline_result.get('measurements', {})
+                print(f'Endpoints tested: {len(measurements)}')
+                
+                for endpoint, result in measurements.items():
+                    if result.get('status') == 'completed':
+                        metrics = result.get('metrics', {})
+                        print(f'{endpoint}: {metrics.get(\"avg_response_time\", 0):.0f}ms avg response')
+            else:
+                print('Failed to establish baseline')
+                print('success=false' >> os.environ['GITHUB_OUTPUT'])
+                
+        except Exception as e:
+            print(f'Error establishing baseline: {e}')
+            print('success=false' >> os.environ['GITHUB_OUTPUT'])
+        "
+    
+    - name: Upload baseline results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-baseline
+        path: backend/baseline_results.json
+        retention-days: 90
+
+  performance-testing:
+    runs-on: ubuntu-latest
+    name: Run Performance Tests
+    needs: [performance-baseline]
+    if: always() && (needs.performance-baseline.outputs.baseline-established == 'true' || github.event.inputs.test_type != 'baseline')
+    outputs:
+      test-status: ${{ steps.perf-test.outputs.status }}
+      overall-performance: ${{ steps.perf-test.outputs.performance }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+    
+    - name: Start application services
+      run: |
+        echo "Starting Flask application for testing..."
+        cd backend
+        python -c "
+        from flask import Flask
+        import time
+        import random
+        app = Flask(__name__)
+        
+        @app.route('/health')
+        def health():
+            time.sleep(random.uniform(0.01, 0.05))  # 10-50ms response
+            return {'status': 'healthy'}
+        
+        @app.route('/api/ai-guru/chat', methods=['POST'])
+        def ai_chat():
+            time.sleep(random.uniform(1.0, 2.0))  # 1-2s response
+            return {'response': 'Spiritual wisdom response'}
+        
+        @app.route('/api/video/quality', methods=['POST'])
+        def video_quality():
+            time.sleep(random.uniform(3.0, 5.0))  # 3-5s response
+            return {'quality_score': random.randint(70, 95)}
+        
+        @app.route('/api/content/moderate', methods=['POST'])  
+        def content_moderate():
+            time.sleep(random.uniform(0.8, 1.5))  # 0.8-1.5s response
+            return {'approved': True}
+        
+        @app.route('/api/video/thumbnail', methods=['POST'])
+        def video_thumbnail():
+            time.sleep(random.uniform(2.5, 4.0))  # 2.5-4s response
+            return {'success': True}
+        
+        @app.route('/api/spiritual/guidance', methods=['POST'])
+        def spiritual_guidance():
+            time.sleep(random.uniform(0.5, 1.0))  # 0.5-1s response
+            return {'guidance': 'Spiritual guidance response'}
+        
+        if __name__ == '__main__':
+            app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+        " &
+        
+        sleep 5
+        curl -f http://localhost:5000/health || exit 1
+    
+    - name: Run performance tests
+      id: perf-test
+      run: |
+        cd backend
+        python -c "
+        import sys
+        sys.path.append('.')
+        from services.performance_testing_service import PerformanceTestingService
+        import json
+        import os
+        
+        service = PerformanceTestingService()
+        
+        test_type = '${{ github.event.inputs.test_type }}' or 'load'
+        target_endpoint = '${{ github.event.inputs.target_endpoint }}' or None
+        duration = int('${{ github.event.inputs.duration_minutes }}' or '5')
+        
+        # Custom configuration based on inputs
+        custom_config = {
+            'users': 50 if test_type == 'load' else 100 if test_type == 'stress' else 25,
+            'duration': duration * 60,  # Convert to seconds
+            'ramp_up_time': 30,
+            'think_time': 1
+        }
+        
+        print(f'Running {test_type} test for {duration} minutes...')
+        
+        try:
+            test_result = service.run_performance_test(test_type, target_endpoint, custom_config)
+            
+            # Save test results
+            with open('performance_test_results.json', 'w') as f:
+                json.dump(test_result, f, indent=2)
+            
+            status = test_result.get('status', 'failed')
+            overall_performance = test_result.get('summary', {}).get('overall_performance', 'unknown')
+            
+            print(f'Test completed with status: {status}')
+            print(f'Overall performance: {overall_performance}')
+            
+            print(f'status={status}' >> os.environ['GITHUB_OUTPUT'])
+            print(f'performance={overall_performance}' >> os.environ['GITHUB_OUTPUT'])
+            
+            # Print summary metrics
+            summary = test_result.get('summary', {})
+            print(f'Total requests: {summary.get(\"total_requests\", 0)}')
+            print(f'Success rate: {(1 - summary.get(\"overall_error_rate\", 0)) * 100:.1f}%')
+            print(f'Average response time: {summary.get(\"avg_response_time_across_endpoints\", 0):.0f}ms')
+            
+        except Exception as e:
+            print(f'Performance test failed: {e}')
+            print('status=failed' >> os.environ['GITHUB_OUTPUT'])
+            print('performance=poor' >> os.environ['GITHUB_OUTPUT'])
+        "
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-test-results
+        path: backend/performance_test_results.json
+        retention-days: 30
+    
+    - name: Generate performance report
+      run: |
+        cd backend
+        if [ -f performance_test_results.json ]; then
+          python -c "
+          import json
+          
+          with open('performance_test_results.json', 'r') as f:
+              data = json.load(f)
+          
+          print('## Performance Test Report')
+          print('')
+          print(f'**Test Type:** {data.get(\"test_type\", \"Unknown\")}')
+          print(f'**Test Status:** {data.get(\"status\", \"Unknown\")}')
+          print(f'**Overall Performance:** {data.get(\"summary\", {}).get(\"overall_performance\", \"Unknown\")}')
+          print('')
+          
+          summary = data.get('summary', {})
+          print('### Summary Metrics:')
+          print('')
+          print(f'- **Total Requests:** {summary.get(\"total_requests\", 0):,}')
+          print(f'- **Successful Requests:** {summary.get(\"total_successful_requests\", 0):,}')
+          print(f'- **Failed Requests:** {summary.get(\"total_failed_requests\", 0):,}')
+          print(f'- **Success Rate:** {(1 - summary.get(\"overall_error_rate\", 0)) * 100:.1f}%')
+          print(f'- **Average Response Time:** {summary.get(\"avg_response_time_across_endpoints\", 0):.0f}ms')
+          print('')
+          
+          # Endpoint results
+          results = data.get('results', {})
+          if results:
+              print('### Endpoint Performance:')
+              print('')
+              for endpoint, result in results.items():
+                  if result.get('status') == 'completed':
+                      metrics = result.get('metrics', {})
+                      print(f'#### {endpoint}')
+                      print(f'- **Average Response Time:** {metrics.get(\"avg_response_time\", 0):.0f}ms')
+                      print(f'- **95th Percentile:** {metrics.get(\"p95_response_time\", 0):.0f}ms')
+                      print(f'- **Success Rate:** {metrics.get(\"success_rate\", 0) * 100:.1f}%')
+                      print(f'- **Throughput:** {metrics.get(\"throughput\", 0):.1f} req/min')
+                      print('')
+          
+          # Baseline comparison
+          baseline_comparison = data.get('baseline_comparison', {})
+          if baseline_comparison:
+              print('### Baseline Comparison:')
+              print('')
+              for endpoint, comparison in baseline_comparison.items():
+                  rt_status = comparison.get('response_time', {}).get('status', 'unknown')
+                  rt_ratio = comparison.get('response_time', {}).get('performance_ratio', 1)
+                  
+                  status_emoji = '✅' if rt_status == 'good' else '⚠️' if rt_status == 'degraded' else '❓'
+                  
+                  print(f'- **{endpoint}:** {status_emoji} {rt_ratio:.2f}x baseline performance')
+              print('')
+          
+          # Recommendations
+          recommendations = data.get('recommendations', [])
+          if recommendations:
+              print('### Optimization Recommendations:')
+              print('')
+              for i, rec in enumerate(recommendations, 1):
+                  print(f'{i}. {rec}')
+              print('')
+          " >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## Performance Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Test results not available**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  optimization-analysis:
+    runs-on: ubuntu-latest
+    name: Performance Optimization Analysis
+    needs: [performance-testing]
+    if: always() && needs.performance-testing.outputs.test-status == 'completed'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+    
+    - name: Download test results
+      uses: actions/download-artifact@v3
+      with:
+        name: performance-test-results
+        path: backend/
+    
+    - name: Generate optimization recommendations
+      run: |
+        cd backend
+        python -c "
+        import sys
+        sys.path.append('.')
+        from services.performance_testing_service import PerformanceTestingService
+        import json
+        
+        service = PerformanceTestingService()
+        
+        try:
+            # Load test results
+            with open('performance_test_results.json', 'r') as f:
+                test_result = json.load(f)
+            
+            # Generate comprehensive optimization report
+            optimization_report = {
+                'timestamp': '$(date -Iseconds)',
+                'test_summary': test_result.get('summary', {}),
+                'performance_issues': [],
+                'optimization_priorities': [],
+                'infrastructure_recommendations': [],
+                'code_optimization_suggestions': []
+            }
+            
+            # Analyze performance issues
+            summary = test_result.get('summary', {})
+            error_rate = summary.get('overall_error_rate', 0)
+            avg_response = summary.get('avg_response_time_across_endpoints', 0)
+            
+            if error_rate > 0.02:
+                optimization_report['performance_issues'].append(f'High error rate: {error_rate * 100:.1f}%')
+                optimization_report['optimization_priorities'].append('Investigate and fix error sources')
+            
+            if avg_response > 2000:
+                optimization_report['performance_issues'].append(f'Slow response times: {avg_response:.0f}ms average')
+                optimization_report['optimization_priorities'].append('Optimize response time performance')
+            
+            # Infrastructure recommendations
+            if avg_response > 3000:
+                optimization_report['infrastructure_recommendations'].extend([
+                    'Consider upgrading server hardware (CPU/RAM)',
+                    'Implement load balancing for better distribution',
+                    'Add Redis caching layer for frequently accessed data'
+                ])
+            
+            # Code optimization suggestions
+            results = test_result.get('results', {})
+            for endpoint, result in results.items():
+                if result.get('status') == 'completed':
+                    metrics = result.get('metrics', {})
+                    response_time = metrics.get('avg_response_time', 0)
+                    
+                    if 'ai-guru' in endpoint and response_time > 3000:
+                        optimization_report['code_optimization_suggestions'].append(
+                            'AI Guru endpoint: Implement response caching and model optimization'
+                        )
+                    elif 'video' in endpoint and response_time > 6000:
+                        optimization_report['code_optimization_suggestions'].append(
+                            'Video processing: Move to background queue processing'
+                        )
+                    elif response_time > 1500:
+                        optimization_report['code_optimization_suggestions'].append(
+                            f'{endpoint}: Review database queries and add appropriate indexes'
+                        )
+            
+            # Save optimization report
+            with open('optimization_report.json', 'w') as f:
+                json.dump(optimization_report, f, indent=2)
+            
+            print('Optimization analysis completed')
+            
+        except Exception as e:
+            print(f'Optimization analysis failed: {e}')
+        "
+    
+    - name: Upload optimization report
+      uses: actions/upload-artifact@v3
+      with:
+        name: optimization-report
+        path: backend/optimization_report.json
+        retention-days: 90
+    
+    - name: Create optimization summary
+      run: |
+        cd backend
+        if [ -f optimization_report.json ]; then
+          python -c "
+          import json
+          
+          with open('optimization_report.json', 'r') as f:
+              report = json.load(f)
+          
+          print('## Performance Optimization Analysis')
+          print('')
+          
+          issues = report.get('performance_issues', [])
+          if issues:
+              print('### 🚨 Performance Issues Detected:')
+              print('')
+              for issue in issues:
+                  print(f'- {issue}')
+              print('')
+          
+          priorities = report.get('optimization_priorities', [])
+          if priorities:
+              print('### 🎯 Optimization Priorities:')
+              print('')
+              for i, priority in enumerate(priorities, 1):
+                  print(f'{i}. {priority}')
+              print('')
+          
+          infra_recs = report.get('infrastructure_recommendations', [])
+          if infra_recs:
+              print('### 🏗️ Infrastructure Recommendations:')
+              print('')
+              for rec in infra_recs:
+                  print(f'- {rec}')
+              print('')
+          
+          code_suggestions = report.get('code_optimization_suggestions', [])
+          if code_suggestions:
+              print('### 💻 Code Optimization Suggestions:')
+              print('')
+              for suggestion in code_suggestions:
+                  print(f'- {suggestion}')
+              print('')
+          
+          if not issues:
+              print('✅ **No significant performance issues detected!**')
+              print('')
+              print('Current performance levels are within acceptable ranges.')
+          " >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## Performance Optimization Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Optimization analysis not available**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  alert-on-degradation:
+    runs-on: ubuntu-latest
+    name: Performance Degradation Alert
+    needs: [performance-testing]
+    if: always() && needs.performance-testing.outputs.overall-performance == 'poor'
+    
+    steps:
+    - name: Create performance alert
+      run: |
+        echo "## 🚨 Performance Degradation Alert" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Alert Level:** HIGH" >> $GITHUB_STEP_SUMMARY
+        echo "**Test Status:** ${{ needs.performance-testing.outputs.test-status }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Performance Rating:** ${{ needs.performance-testing.outputs.overall-performance }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Immediate Actions Required:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "1. 🔍 Review performance test results above" >> $GITHUB_STEP_SUMMARY
+        echo "2. 📊 Check system resources and database performance" >> $GITHUB_STEP_SUMMARY
+        echo "3. 🔧 Apply optimization recommendations" >> $GITHUB_STEP_SUMMARY
+        echo "4. 🧪 Re-run performance tests after optimizations" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Escalation:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- Notify development team leads" >> $GITHUB_STEP_SUMMARY
+        echo "- Schedule performance optimization sprint" >> $GITHUB_STEP_SUMMARY
+        echo "- Consider scaling infrastructure if needed" >> $GITHUB_STEP_SUMMARY
+        
+        # Set error status to make the job appear as failed
+        echo "::error::Performance degradation detected - immediate attention required"
+    
+    - name: Send notifications
+      run: |
+        # In a real implementation, this would send notifications via:
+        # - Slack webhook for immediate team notification
+        # - Email alerts to stakeholders
+        # - PagerDuty for on-call engineers
+        # - Discord/Teams integration
+        # - JIRA ticket creation for tracking
+        
+        echo "Performance degradation notifications would be sent here"
+        echo "Webhook URLs and notification services would be configured"

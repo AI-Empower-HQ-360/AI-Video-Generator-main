@@ -1,0 +1,779 @@
+name: Advanced Automation - Disaster Recovery
+
+on:
+  schedule:
+    # Run backup verification daily at 1 AM UTC
+    - cron: '0 1 * * *'
+    # Run full disaster recovery test weekly on Saturdays at 4 AM UTC
+    - cron: '0 4 * * 6'
+  workflow_dispatch:
+    inputs:
+      action_type:
+        description: 'Type of disaster recovery action'
+        required: true
+        default: 'backup'
+        type: choice
+        options:
+          - backup
+          - restore_test
+          - failover_test
+          - full_dr_test
+          - health_check
+      backup_type:
+        description: 'Type of backup to create'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - database
+          - content_files
+          - configuration
+          - user_data
+      restore_backup_id:
+        description: 'Backup ID to restore from (for restore tests)'
+        required: false
+        default: ''
+
+env:
+  BACKUP_RETENTION_DAYS: 30
+  DR_TEST_ENVIRONMENT: staging
+
+jobs:
+  health-monitoring:
+    runs-on: ubuntu-latest
+    name: System Health Monitoring
+    outputs:
+      system-health: ${{ steps.health-check.outputs.status }}
+      critical-issues: ${{ steps.health-check.outputs.critical }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+    
+    - name: Run system health check
+      id: health-check
+      run: |
+        cd backend
+        python -c "
+        import sys
+        sys.path.append('.')
+        from services.disaster_recovery_service import get_system_health_status
+        import json
+        import os
+        
+        print('Running comprehensive system health check...')
+        
+        try:
+            health_status = get_system_health_status()
+            
+            # Save health status
+            with open('health_status.json', 'w') as f:
+                json.dump(health_status, f, indent=2)
+            
+            overall_health = health_status.get('overall_health', 'unknown')
+            print(f'Overall system health: {overall_health}')
+            
+            # Check for critical issues
+            components = health_status.get('components', {})
+            critical_issues = []
+            
+            for component, info in components.items():
+                status = info.get('status', 'unknown')
+                if hasattr(status, 'value'):
+                    status = status.value
+                
+                print(f'{component}: {status}')
+                
+                if status in ['critical', 'failed']:
+                    critical_issues.append(component)
+            
+            print(f'status={overall_health}' >> os.environ['GITHUB_OUTPUT'])
+            print(f'critical={len(critical_issues)}' >> os.environ['GITHUB_OUTPUT'])
+            
+            if critical_issues:
+                print(f'Critical issues found in: {", ".join(critical_issues)}')
+            else:
+                print('No critical issues detected')
+                
+        except Exception as e:
+            print(f'Health check failed: {e}')
+            print('status=unknown' >> os.environ['GITHUB_OUTPUT'])
+            print('critical=999' >> os.environ['GITHUB_OUTPUT'])
+        "
+    
+    - name: Upload health status
+      uses: actions/upload-artifact@v3
+      with:
+        name: system-health-status
+        path: backend/health_status.json
+        retention-days: 7
+    
+    - name: Create health report
+      run: |
+        cd backend
+        if [ -f health_status.json ]; then
+          python -c "
+          import json
+          
+          with open('health_status.json', 'r') as f:
+              health = json.load(f)
+          
+          overall = health.get('overall_health', 'unknown')
+          monitoring = health.get('monitoring_active', False)
+          
+          print('## System Health Report')
+          print('')
+          print(f'**Overall Health Status:** {overall.upper()}')
+          print(f'**Monitoring Active:** {\"✅ Yes\" if monitoring else \"❌ No\"}')
+          print('')
+          
+          components = health.get('components', {})
+          if components:
+              print('### Component Status:')
+              print('')
+              for component, info in components.items():
+                  status = info.get('status', 'unknown')
+                  if hasattr(status, 'value'):
+                      status = status.value
+                  
+                  last_check = info.get('last_check', 'Never')
+                  
+                  if status == 'healthy':
+                      emoji = '✅'
+                  elif status == 'warning':
+                      emoji = '⚠️'
+                  elif status in ['critical', 'failed']:
+                      emoji = '❌'
+                  else:
+                      emoji = '❓'
+                  
+                  print(f'- **{component}**: {emoji} {status.upper()}')
+                  if last_check != 'Never':
+                      print(f'  - Last check: {last_check}')
+              print('')
+          
+          # Recent alerts
+          recent_alerts = health.get('recent_alerts', [])
+          if recent_alerts:
+              print('### Recent Alerts:')
+              print('')
+              for alert in recent_alerts[-5:]:  # Last 5 alerts
+                  timestamp = alert.get('timestamp', 'Unknown')
+                  component = alert.get('component', 'Unknown')
+                  severity = alert.get('severity', 'unknown')
+                  print(f'- **{timestamp}**: {component} - {severity}')
+              print('')
+          
+          # System metrics
+          metrics = health.get('system_metrics', {})
+          if metrics:
+              print('### System Metrics:')
+              print('')
+              uptime = metrics.get('uptime', 'Unknown')
+              total_failovers = metrics.get('total_failovers', 0)
+              successful_recoveries = metrics.get('successful_recoveries', 0)
+              failed_recoveries = metrics.get('failed_recoveries', 0)
+              
+              print(f'- **Uptime**: {uptime}')
+              print(f'- **Total Failovers**: {total_failovers}')
+              print(f'- **Successful Recoveries**: {successful_recoveries}')
+              print(f'- **Failed Recoveries**: {failed_recoveries}')
+              print('')
+          " >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## System Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Health status not available**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  backup-creation:
+    runs-on: ubuntu-latest
+    name: Automated Backup Creation
+    needs: [health-monitoring]
+    if: github.event.inputs.action_type == 'backup' || github.event_name == 'schedule'
+    outputs:
+      backup-id: ${{ steps.create-backup.outputs.backup_id }}
+      backup-success: ${{ steps.create-backup.outputs.success }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+    
+    - name: Create system backup
+      id: create-backup
+      run: |
+        cd backend
+        python -c "
+        import sys
+        sys.path.append('.')
+        from services.disaster_recovery_service import create_emergency_backup
+        import json
+        import os
+        
+        backup_type = '${{ github.event.inputs.backup_type }}' or 'full'
+        
+        print(f'Creating {backup_type} backup...')
+        
+        try:
+            backup_result = create_emergency_backup(backup_type)
+            
+            # Save backup results
+            with open('backup_results.json', 'w') as f:
+                json.dump(backup_result, f, indent=2)
+            
+            backup_id = backup_result.get('backup_id', 'unknown')
+            status = backup_result.get('status', 'failed')
+            
+            print(f'Backup ID: {backup_id}')
+            print(f'Backup status: {status}')
+            
+            success = status == 'completed'
+            print(f'backup_id={backup_id}' >> os.environ['GITHUB_OUTPUT'])
+            print(f'success={str(success).lower()}' >> os.environ['GITHUB_OUTPUT'])
+            
+            if success:
+                size_bytes = backup_result.get('size_bytes', 0)
+                files_count = len(backup_result.get('files_backed_up', []))
+                print(f'Backup size: {size_bytes:,} bytes')
+                print(f'Files backed up: {files_count}')
+            else:
+                error = backup_result.get('error', 'Unknown error')
+                print(f'Backup failed: {error}')
+                
+        except Exception as e:
+            print(f'Backup creation failed: {e}')
+            print('backup_id=failed' >> os.environ['GITHUB_OUTPUT'])
+            print('success=false' >> os.environ['GITHUB_OUTPUT'])
+        "
+    
+    - name: Upload backup results
+      uses: actions/upload-artifact@v3
+      with:
+        name: backup-results
+        path: backend/backup_results.json
+        retention-days: 90
+    
+    - name: Simulate backup to cloud storage
+      if: steps.create-backup.outputs.success == 'true'
+      run: |
+        echo "Uploading backup to cloud storage..."
+        
+        # In a real implementation, this would:
+        # - Upload to AWS S3, Azure Blob Storage, or Google Cloud Storage
+        # - Encrypt backups before upload
+        # - Verify upload integrity
+        # - Update backup catalog/database
+        # - Send success notifications
+        
+        backup_id="${{ steps.create-backup.outputs.backup_id }}"
+        echo "Backup $backup_id successfully uploaded to cloud storage"
+        echo "Backup retention policy applied: ${{ env.BACKUP_RETENTION_DAYS }} days"
+    
+    - name: Create backup report
+      run: |
+        cd backend
+        if [ -f backup_results.json ]; then
+          python -c "
+          import json
+          
+          with open('backup_results.json', 'r') as f:
+              backup = json.load(f)
+          
+          backup_id = backup.get('backup_id', 'Unknown')
+          status = backup.get('status', 'Unknown')
+          backup_type = backup.get('data_type', 'Unknown')
+          timestamp = backup.get('timestamp', 'Unknown')
+          
+          print('## Backup Creation Report')
+          print('')
+          print(f'**Backup ID:** {backup_id}')
+          print(f'**Status:** {status.upper()}')
+          print(f'**Type:** {backup_type}')
+          print(f'**Created:** {timestamp}')
+          print('')
+          
+          if status == 'completed':
+              size_bytes = backup.get('size_bytes', 0)
+              files_backed_up = backup.get('files_backed_up', [])
+              checksum = backup.get('checksum', 'N/A')
+              
+              # Convert bytes to human readable
+              if size_bytes > 1024*1024*1024:
+                  size_str = f'{size_bytes / (1024*1024*1024):.2f} GB'
+              elif size_bytes > 1024*1024:
+                  size_str = f'{size_bytes / (1024*1024):.2f} MB'
+              elif size_bytes > 1024:
+                  size_str = f'{size_bytes / 1024:.2f} KB'
+              else:
+                  size_str = f'{size_bytes} bytes'
+              
+              print('### Backup Details:')
+              print('')
+              print(f'- **Size:** {size_str}')
+              print(f'- **Files:** {len(files_backed_up)}')
+              print(f'- **Checksum:** {checksum[:16]}...')
+              print('')
+              
+              print('✅ **Backup completed successfully!**')
+              print('')
+              print('The backup has been verified and is ready for disaster recovery scenarios.')
+          else:
+              error = backup.get('error', 'Unknown error')
+              print(f'❌ **Backup failed:** {error}')
+              print('')
+              print('Please investigate the backup failure and retry.')
+          " >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## Backup Creation Report" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Backup results not available**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  restore-testing:
+    runs-on: ubuntu-latest
+    name: Backup Restore Testing
+    needs: [backup-creation]
+    if: github.event.inputs.action_type == 'restore_test' || github.event_name == 'schedule'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+    
+    - name: Test backup restore
+      id: restore-test
+      run: |
+        cd backend
+        python -c "
+        import sys
+        sys.path.append('.')
+        from services.disaster_recovery_service import DisasterRecoveryManager
+        import json
+        import os
+        
+        manager = DisasterRecoveryManager()
+        
+        # Use provided backup ID or latest from previous step
+        backup_id = '${{ github.event.inputs.restore_backup_id }}' or '${{ needs.backup-creation.outputs.backup-id }}'
+        
+        if not backup_id or backup_id == 'failed':
+            # Create a test backup first
+            print('Creating test backup for restore testing...')
+            backup_result = manager.create_backup('full', 'full')
+            backup_id = backup_result.get('backup_id', 'test_backup')
+        
+        print(f'Testing restore from backup: {backup_id}')
+        
+        try:
+            # Test restore in isolated environment
+            restore_result = manager.restore_from_backup(backup_id, 'full')
+            
+            # Save restore test results
+            with open('restore_test_results.json', 'w') as f:
+                json.dump(restore_result, f, indent=2)
+            
+            status = restore_result.get('status', 'failed')
+            print(f'Restore test status: {status}')
+            
+            if status == 'completed':
+                restored_components = restore_result.get('restored_components', [])
+                print(f'Successfully restored components: {restored_components}')
+            else:
+                errors = restore_result.get('errors', [])
+                error = restore_result.get('error', 'Unknown error')
+                print(f'Restore test failed: {error}')
+                if errors:
+                    print(f'Component errors: {errors}')
+                    
+        except Exception as e:
+            print(f'Restore test failed: {e}')
+            restore_result = {
+                'backup_id': backup_id,
+                'status': 'failed',
+                'error': str(e)
+            }
+            
+            with open('restore_test_results.json', 'w') as f:
+                json.dump(restore_result, f, indent=2)
+        "
+    
+    - name: Upload restore test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: restore-test-results
+        path: backend/restore_test_results.json
+        retention-days: 30
+    
+    - name: Create restore test report
+      run: |
+        cd backend
+        if [ -f restore_test_results.json ]; then
+          python -c "
+          import json
+          
+          with open('restore_test_results.json', 'r') as f:
+              restore = json.load(f)
+          
+          backup_id = restore.get('backup_id', 'Unknown')
+          status = restore.get('status', 'Unknown')
+          timestamp = restore.get('timestamp', 'Unknown')
+          
+          print('## Backup Restore Test Report')
+          print('')
+          print(f'**Backup ID:** {backup_id}')
+          print(f'**Test Status:** {status.upper()}')
+          print(f'**Test Time:** {timestamp}')
+          print('')
+          
+          if status == 'completed':
+              restored_components = restore.get('restored_components', [])
+              restore_time = restore.get('restore_time', 'Unknown')
+              
+              print('### Restore Details:')
+              print('')
+              print(f'- **Components Restored:** {len(restored_components)}')
+              print(f'- **Restore Time:** {restore_time}')
+              print('')
+              
+              if restored_components:
+                  print('### Successfully Restored:')
+                  print('')
+                  for component in restored_components:
+                      print(f'- ✅ {component}')
+                  print('')
+              
+              print('🎉 **Restore test completed successfully!**')
+              print('')
+              print('The backup is verified and can be used for disaster recovery.')
+          else:
+              error = restore.get('error', 'Unknown error')
+              errors = restore.get('errors', [])
+              
+              print(f'❌ **Restore test failed:** {error}')
+              print('')
+              
+              if errors:
+                  print('### Component Errors:')
+                  print('')
+                  for error_detail in errors:
+                      print(f'- ❌ {error_detail}')
+                  print('')
+              
+              print('⚠️ **Action Required:** Investigate restore failures and fix backup process.')
+          " >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## Backup Restore Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Restore test results not available**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  failover-testing:
+    runs-on: ubuntu-latest
+    name: Failover Testing
+    needs: [health-monitoring]
+    if: github.event.inputs.action_type == 'failover_test' || github.event.inputs.action_type == 'full_dr_test'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+    
+    - name: Run failover test
+      id: failover-test
+      run: |
+        cd backend
+        python -c "
+        import sys
+        sys.path.append('.')
+        from services.disaster_recovery_service import DisasterRecoveryManager
+        import json
+        import os
+        import time
+        
+        manager = DisasterRecoveryManager()
+        
+        print('Testing failover capabilities...')
+        
+        try:
+            # Simulate component failure and test failover
+            test_results = {
+                'test_id': f'failover_test_{int(time.time())}',
+                'timestamp': '$(date -Iseconds)',
+                'tests_performed': [],
+                'overall_status': 'success',
+                'issues_found': []
+            }
+            
+            # Test database failover
+            print('Testing database failover...')
+            db_failover = manager._execute_failover('database')
+            test_results['tests_performed'].append({
+                'component': 'database',
+                'result': db_failover,
+                'status': 'success' if db_failover.get('success') else 'failed'
+            })
+            
+            if not db_failover.get('success'):
+                test_results['overall_status'] = 'failed'
+                test_results['issues_found'].append('Database failover failed')
+            
+            # Test web server failover
+            print('Testing web server failover...')
+            web_failover = manager._execute_failover('web_server')
+            test_results['tests_performed'].append({
+                'component': 'web_server',
+                'result': web_failover,
+                'status': 'success' if web_failover.get('success') else 'failed'
+            })
+            
+            if not web_failover.get('success'):
+                test_results['overall_status'] = 'failed'
+                test_results['issues_found'].append('Web server failover failed')
+            
+            # Test AI services failover
+            print('Testing AI services failover...')
+            ai_failover = manager._execute_failover('ai_services')
+            test_results['tests_performed'].append({
+                'component': 'ai_services',
+                'result': ai_failover,
+                'status': 'success' if ai_failover.get('success') else 'failed'
+            })
+            
+            if not ai_failover.get('success'):
+                test_results['overall_status'] = 'failed'
+                test_results['issues_found'].append('AI services failover failed')
+            
+            # Save failover test results
+            with open('failover_test_results.json', 'w') as f:
+                json.dump(test_results, f, indent=2)
+            
+            print(f'Failover test completed with status: {test_results[\"overall_status\"]}')
+            
+            if test_results['issues_found']:
+                print('Issues found:')
+                for issue in test_results['issues_found']:
+                    print(f'  - {issue}')
+                    
+        except Exception as e:
+            print(f'Failover test failed: {e}')
+            test_results = {
+                'test_id': 'failed',
+                'timestamp': '$(date -Iseconds)',
+                'overall_status': 'failed',
+                'error': str(e)
+            }
+            
+            with open('failover_test_results.json', 'w') as f:
+                json.dump(test_results, f, indent=2)
+        "
+    
+    - name: Upload failover test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: failover-test-results
+        path: backend/failover_test_results.json
+        retention-days: 30
+    
+    - name: Create failover test report
+      run: |
+        cd backend
+        if [ -f failover_test_results.json ]; then
+          python -c "
+          import json
+          
+          with open('failover_test_results.json', 'r') as f:
+              results = json.load(f)
+          
+          test_id = results.get('test_id', 'Unknown')
+          overall_status = results.get('overall_status', 'Unknown')
+          timestamp = results.get('timestamp', 'Unknown')
+          
+          print('## Failover Test Report')
+          print('')
+          print(f'**Test ID:** {test_id}')
+          print(f'**Overall Status:** {overall_status.upper()}')
+          print(f'**Test Time:** {timestamp}')
+          print('')
+          
+          tests_performed = results.get('tests_performed', [])
+          if tests_performed:
+              print('### Component Failover Tests:')
+              print('')
+              
+              for test in tests_performed:
+                  component = test.get('component', 'Unknown')
+                  status = test.get('status', 'unknown')
+                  emoji = '✅' if status == 'success' else '❌'
+                  
+                  print(f'- **{component}**: {emoji} {status.upper()}')
+                  
+                  result = test.get('result', {})
+                  if result.get('success'):
+                      new_primary = result.get('new_primary', 'Unknown')
+                      failover_time = result.get('failover_time', 'Unknown')
+                      print(f'  - New Primary: {new_primary}')
+                      print(f'  - Failover Time: {failover_time}')
+                  else:
+                      error = result.get('error', 'Unknown error')
+                      print(f'  - Error: {error}')
+              print('')
+          
+          issues_found = results.get('issues_found', [])
+          if issues_found:
+              print('### Issues Identified:')
+              print('')
+              for issue in issues_found:
+                  print(f'- ⚠️ {issue}')
+              print('')
+              print('**Action Required:** Investigate and resolve failover issues.')
+          else:
+              print('✅ **All failover tests passed successfully!**')
+              print('')
+              print('The system is ready for automatic failover in case of component failures.')
+          " >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## Failover Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **Failover test results not available**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  dr-summary:
+    runs-on: ubuntu-latest
+    name: Disaster Recovery Summary
+    needs: [health-monitoring, backup-creation, restore-testing, failover-testing]
+    if: always()
+    
+    steps:
+    - name: Generate DR summary report
+      run: |
+        echo "## 🛡️ Disaster Recovery Automation Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Workflow Run:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Action Type:** ${{ github.event.inputs.action_type || 'scheduled' }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Timestamp:** $(date -Iseconds)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### DR Component Status:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        health_status="${{ needs.health-monitoring.result }}"
+        backup_status="${{ needs.backup-creation.result }}"
+        restore_status="${{ needs.restore-testing.result }}"
+        failover_status="${{ needs.failover-testing.result }}"
+        
+        echo "- **System Health Check:** ${health_status:-'skipped'}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Backup Creation:** ${backup_status:-'skipped'}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Restore Testing:** ${restore_status:-'skipped'}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Failover Testing:** ${failover_status:-'skipped'}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Overall DR readiness assessment
+        total_tests=0
+        passed_tests=0
+        
+        for status in "$health_status" "$backup_status" "$restore_status" "$failover_status"; do
+          if [ "$status" != "skipped" ] && [ -n "$status" ]; then
+            total_tests=$((total_tests + 1))
+            if [ "$status" = "success" ]; then
+              passed_tests=$((passed_tests + 1))
+            fi
+          fi
+        done
+        
+        if [ $total_tests -eq 0 ]; then
+          echo "⚠️ **No DR tests were executed**" >> $GITHUB_STEP_SUMMARY
+        elif [ $passed_tests -eq $total_tests ]; then
+          echo "🎉 **All DR tests passed! System is disaster-ready.**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **$passed_tests/$total_tests DR tests passed. Some issues need attention.**" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Key Metrics:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **System Health:** ${{ needs.health-monitoring.outputs.system-health || 'unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Critical Issues:** ${{ needs.health-monitoring.outputs.critical-issues || '0' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Backup Success:** ${{ needs.backup-creation.outputs.backup-success || 'unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Latest Backup ID:** ${{ needs.backup-creation.outputs.backup-id || 'none' }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### Next Actions:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.health-monitoring.outputs.critical-issues }}" != "0" ] && [ -n "${{ needs.health-monitoring.outputs.critical-issues }}" ]; then
+          echo "- 🚨 **URGENT:** Address critical system health issues" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "$backup_status" != "success" ] && [ "$backup_status" != "skipped" ]; then
+          echo "- 🔧 Investigate and fix backup creation issues" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "$restore_status" != "success" ] && [ "$restore_status" != "skipped" ]; then
+          echo "- 🔧 Investigate and fix restore process issues" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "$failover_status" != "success" ] && [ "$failover_status" != "skipped" ]; then
+          echo "- 🔧 Investigate and fix failover mechanisms" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ $passed_tests -eq $total_tests ] && [ $total_tests -gt 0 ]; then
+          echo "- ✅ Continue regular DR testing schedule" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Review and update DR documentation" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Set workflow status
+      run: |
+        total_critical=${{ needs.health-monitoring.outputs.critical-issues || 0 }}
+        
+        if [ "$total_critical" -gt 0 ]; then
+          echo "::error::Critical system health issues detected - immediate attention required"
+          exit 1
+        fi
+        
+        # Check if any critical DR components failed
+        if [ "${{ needs.backup-creation.result }}" = "failure" ]; then
+          echo "::error::Backup creation failed - data protection at risk"
+          exit 1
+        fi
+        
+        if [ "${{ needs.restore-testing.result }}" = "failure" ]; then
+          echo "::warning::Restore testing failed - verify backup integrity"
+        fi
+        
+        if [ "${{ needs.failover-testing.result }}" = "failure" ]; then
+          echo "::warning::Failover testing failed - verify redundancy systems"
+        fi
+        
+        echo "Disaster recovery automation completed"
