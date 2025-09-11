@@ -25,6 +25,7 @@ from api.sessions import sessions_bp
 from api.slokas import slokas_bp
 from api.durable_endpoints import durable_bp
 from api.whisper_endpoints import whisper_bp
+from api.analytics import analytics_bp
 
 # Configure CORS for Durable
 CORS(app, resources={
@@ -45,6 +46,7 @@ app.register_blueprint(users_bp, url_prefix='/api/users')
 app.register_blueprint(sessions_bp, url_prefix='/api/sessions')
 app.register_blueprint(slokas_bp, url_prefix='/api/slokas')
 app.register_blueprint(whisper_bp, url_prefix='/api/whisper')  # New Whisper endpoints
+app.register_blueprint(analytics_bp, url_prefix='/api/analytics')  # Analytics endpoints
 app.register_blueprint(durable_bp)  # No url_prefix as it has its own
 
 @app.route('/')
