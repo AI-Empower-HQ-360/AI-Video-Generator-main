@@ -1,0 +1,118 @@
+{
+  "regions": {
+    "us-east-1": {
+      "name": "US East (Virginia)",
+      "primary": true,
+      "compliance": ["SOC2", "HIPAA"],
+      "currency": "USD",
+      "languages": ["en-US", "es-US"],
+      "cdn_endpoints": [
+        "us-east-1.cloudfront.net"
+      ],
+      "database": {
+        "read_replicas": ["us-east-1b", "us-east-1c"],
+        "backup_region": "us-west-2"
+      }
+    },
+    "us-west-2": {
+      "name": "US West (Oregon)",
+      "primary": false,
+      "compliance": ["SOC2", "HIPAA"],
+      "currency": "USD",
+      "languages": ["en-US", "es-US"],
+      "cdn_endpoints": [
+        "us-west-2.cloudfront.net"
+      ],
+      "database": {
+        "read_replicas": ["us-west-2b", "us-west-2c"],
+        "backup_region": "us-east-1"
+      }
+    },
+    "eu-west-1": {
+      "name": "Europe (Ireland)",
+      "primary": false,
+      "compliance": ["GDPR", "SOC2"],
+      "currency": "EUR",
+      "languages": ["en-GB", "de-DE", "fr-FR", "es-ES", "it-IT"],
+      "cdn_endpoints": [
+        "eu-west-1.cloudfront.net"
+      ],
+      "database": {
+        "read_replicas": ["eu-west-1b", "eu-west-1c"],
+        "backup_region": "eu-central-1"
+      }
+    },
+    "eu-central-1": {
+      "name": "Europe (Frankfurt)",
+      "primary": false,
+      "compliance": ["GDPR", "SOC2"],
+      "currency": "EUR", 
+      "languages": ["de-DE", "en-GB", "fr-FR"],
+      "cdn_endpoints": [
+        "eu-central-1.cloudfront.net"
+      ],
+      "database": {
+        "read_replicas": ["eu-central-1b", "eu-central-1c"],
+        "backup_region": "eu-west-1"
+      }
+    },
+    "ap-southeast-1": {
+      "name": "Asia Pacific (Singapore)",
+      "primary": false,
+      "compliance": ["SOC2", "PDPA"],
+      "currency": "SGD",
+      "languages": ["en-SG", "zh-CN", "ms-MY", "hi-IN"],
+      "cdn_endpoints": [
+        "ap-southeast-1.cloudfront.net"
+      ],
+      "database": {
+        "read_replicas": ["ap-southeast-1b", "ap-southeast-1c"],
+        "backup_region": "ap-northeast-1"
+      }
+    },
+    "ap-northeast-1": {
+      "name": "Asia Pacific (Tokyo)",
+      "primary": false,
+      "compliance": ["SOC2", "PIPL"],
+      "currency": "JPY",
+      "languages": ["ja-JP", "en-JP", "ko-KR"],
+      "cdn_endpoints": [
+        "ap-northeast-1.cloudfront.net"
+      ],
+      "database": {
+        "read_replicas": ["ap-northeast-1b", "ap-northeast-1c"],
+        "backup_region": "ap-southeast-1"
+      }
+    },
+    "me-south-1": {
+      "name": "Middle East (Bahrain)",
+      "primary": false,
+      "compliance": ["SOC2"],
+      "currency": "USD",
+      "languages": ["ar-SA", "en-US", "fa-IR", "he-IL"],
+      "rtl_support": true,
+      "cdn_endpoints": [
+        "me-south-1.cloudfront.net"
+      ],
+      "database": {
+        "read_replicas": ["me-south-1b", "me-south-1c"],
+        "backup_region": "eu-west-1"
+      }
+    }
+  },
+  "failover_policies": {
+    "health_check_interval": 30,
+    "failure_threshold": 3,
+    "recovery_threshold": 2,
+    "automatic_failover": true,
+    "failover_routes": {
+      "us-east-1": ["us-west-2", "eu-west-1"],
+      "us-west-2": ["us-east-1", "ap-southeast-1"],
+      "eu-west-1": ["eu-central-1", "us-east-1"],
+      "eu-central-1": ["eu-west-1", "me-south-1"],
+      "ap-southeast-1": ["ap-northeast-1", "us-west-2"],
+      "ap-northeast-1": ["ap-southeast-1", "us-west-2"],
+      "me-south-1": ["eu-west-1", "ap-southeast-1"]
+    }
+  }
+}
