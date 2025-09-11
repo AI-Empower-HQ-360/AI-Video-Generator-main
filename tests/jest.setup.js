@@ -1,7 +1,20 @@
-import '@testing-library/jest-dom';
+require('@testing-library/jest-dom');
 
 // Mock fetch globally
 global.fetch = jest.fn();
+
+// Add TextEncoder and TextDecoder polyfills for Node.js
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
+// Add Blob polyfill for Node.js
+global.Blob = class Blob {
+  constructor(parts, options = {}) {
+    this.parts = parts || [];
+    this.type = options.type || '';
+  }
+};
 
 // Reset all mocks before each test
 beforeEach(() => {
