@@ -25,6 +25,7 @@ from api.sessions import sessions_bp
 from api.slokas import slokas_bp
 from api.durable_endpoints import durable_bp
 from api.whisper_endpoints import whisper_bp
+from api.video_ai import video_ai_bp
 
 # Configure CORS for Durable
 CORS(app, resources={
@@ -45,15 +46,24 @@ app.register_blueprint(users_bp, url_prefix='/api/users')
 app.register_blueprint(sessions_bp, url_prefix='/api/sessions')
 app.register_blueprint(slokas_bp, url_prefix='/api/slokas')
 app.register_blueprint(whisper_bp, url_prefix='/api/whisper')  # New Whisper endpoints
+app.register_blueprint(video_ai_bp, url_prefix='/api/video-ai')  # New AI Video capabilities
 app.register_blueprint(durable_bp)  # No url_prefix as it has its own
 
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'AI Empower Heart Spiritual Platform API',
+        'message': 'AI Empower Heart Spiritual Platform API with Advanced Video AI Capabilities',
         'version': '1.0.0',
         'status': 'active',
         'available_gurus': ['karma', 'bhakti', 'meditation', 'yoga', 'spiritual', 'sloka'],
+        'video_ai_features': [
+            'AI Script Generation',
+            'Deepfake Detection', 
+            'Emotion Recognition',
+            'Video Recommendations',
+            'A/B Testing',
+            'Performance Analytics'
+        ],
         'timestamp': datetime.utcnow().isoformat()
     })
 

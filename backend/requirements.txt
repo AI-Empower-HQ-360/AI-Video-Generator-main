@@ -43,8 +43,28 @@ urllib3==2.0.4
 black==23.7.0
 flake8==6.1.0
 
-# AI/ML
+# AI/ML for Video Enhancement
 openai>=1.0.0
 python-dotenv==1.0.0
 aiohttp==3.9.1
 asyncio==3.4.3
+
+# Computer Vision and ML
+# opencv-python==4.8.1.78  # Commented out due to environment constraints
+# tensorflow==2.13.0       # Commented out due to environment constraints  
+# torch>=2.0.0            # Commented out due to environment constraints
+# torchvision>=0.15.0     # Commented out due to environment constraints
+
+# Audio Processing
+# librosa==0.10.1         # Commented out due to environment constraints
+
+# Image Processing  
+Pillow==10.0.0
+
+# Data Processing
+jsonschema==4.19.0
+python-dateutil==2.8.2
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
