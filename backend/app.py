@@ -26,6 +26,11 @@ from api.slokas import slokas_bp
 from api.durable_endpoints import durable_bp
 from api.whisper_endpoints import whisper_bp
 
+# Import edge computing and video processing routes
+from api.edge_computing import edge_bp
+from api.video_processing import video_bp
+from api.collaborative_editing import collab_bp
+
 # Configure CORS for Durable
 CORS(app, resources={
     r"/api/*": {
@@ -47,13 +52,26 @@ app.register_blueprint(slokas_bp, url_prefix='/api/slokas')
 app.register_blueprint(whisper_bp, url_prefix='/api/whisper')  # New Whisper endpoints
 app.register_blueprint(durable_bp)  # No url_prefix as it has its own
 
+# Register edge computing and video processing blueprints
+app.register_blueprint(edge_bp, url_prefix='/api/edge')
+app.register_blueprint(video_bp, url_prefix='/api/video')
+app.register_blueprint(collab_bp, url_prefix='/api/collaborative')
+
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'AI Empower Heart Spiritual Platform API',
+        'message': 'AI Empower Heart Spiritual Platform API with Edge Computing Video Processing',
         'version': '1.0.0',
         'status': 'active',
         'available_gurus': ['karma', 'bhakti', 'meditation', 'yoga', 'spiritual', 'sloka'],
+        'edge_computing_features': [
+            'distributed_video_processing',
+            'collaborative_editing',
+            'gpu_acceleration',
+            'offline_editing',
+            'p2p_streaming',
+            'edge_ai_inference'
+        ],
         'timestamp': datetime.utcnow().isoformat()
     })
 
