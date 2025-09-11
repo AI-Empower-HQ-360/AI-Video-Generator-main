@@ -1,6 +1,7 @@
 # Core dependencies
 flask==2.3.3
 flask-cors==4.0.0
+flask-compress==1.13
 gunicorn==21.2.0
 python-dotenv==1.0.0
 openai==1.12.0
