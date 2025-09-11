@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Automation System - AI Video Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f6f8fb 0%, #f1f5f9 100%);
+            color: #334155;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .header-title h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary:disabled {
+            background: #94a3b8;
+            transform: none;
+            cursor: not-allowed;
+        }
+        
+        .canvas {
+            height: calc(100vh - 80px);
+            position: relative;
+            background: 
+                linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+                linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: auto;
+        }
+        
+        .workflow-node {
+            position: absolute;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            max-width: 200px;
+        }
+        
+        .workflow-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        
+        .workflow-node.selected {
+            border-color: #facc15;
+            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.3);
+        }
+        
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .node-icon {
+            font-size: 1.2rem;
+        }
+        
+        .node-type {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .node-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #1e293b;
+        }
+        
+        .node-description {
+            font-size: 0.75rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+        
+        .connection-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 2px solid #94a3b8;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.2s;
+        }
+        
+        .connection-handle.output {
+            right: -6px;
+        }
+        
+        .connection-handle.input {
+            left: -6px;
+        }
+        
+        .connection-handle:hover {
+            border-color: #3b82f6;
+            background: #dbeafe;
+            transform: translateY(-50%) scale(1.2);
+        }
+        
+        .connection-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .feature-panel {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            max-width: 320px;
+            z-index: 10;
+        }
+        
+        .feature-panel h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #1e293b;
+        }
+        
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #475569;
+        }
+        
+        .details-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            max-width: 280px;
+            z-index: 10;
+        }
+        
+        .details-panel h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+        
+        .details-panel p {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .detail-value {
+            color: #6b7280;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+        
+        .divider {
+            color: #d1d5db;
+        }
+        
+        /* Node color schemes */
+        .node-start { border-left: 4px solid #22c55e; }
+        .node-action { border-left: 4px solid #3b82f6; }
+        .node-condition { border-left: 4px solid #f59e0b; }
+        .node-approval { border-left: 4px solid #8b5cf6; }
+        .node-localization { border-left: 4px solid #6366f1; }
+        .node-schedule { border-left: 4px solid #f97316; }
+        .node-end { border-left: 4px solid #ef4444; }
+        
+        .executing {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-title">
+                <span style="font-size: 1.5rem;">🔄</span>
+                <h1>Daily Content Creation Workflow</h1>
+            </div>
+            <span class="badge">7 nodes, 7 connections</span>
+        </div>
+        <button class="btn btn-primary" onclick="executeWorkflow()" id="executeBtn">
+            <span>▶️</span>
+            Execute Workflow
+        </button>
+    </div>
+
+    <div class="canvas" id="canvas">
+        <!-- Feature Panel -->
+        <div class="feature-panel">
+            <h3>🎯 Workflow Automation Features</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <span>🚀</span>
+                    <span>Visual drag-drop workflow builder</span>
+                </div>
+                <div class="feature-item">
+                    <span>❓</span>
+                    <span>Conditional logic and branching</span>
+                </div>
+                <div class="feature-item">
+                    <span>✅</span>
+                    <span>Approval chains and review processes</span>
+                </div>
+                <div class="feature-item">
+                    <span>🌍</span>
+                    <span>Multi-language localization workflows</span>
+                </div>
+                <div class="feature-item">
+                    <span>⏰</span>
+                    <span>Automated content scheduling</span>
+                </div>
+                <div class="feature-item">
+                    <span>🏪</span>
+                    <span>Template marketplace community</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow Nodes -->
+        <div class="workflow-node node-start" style="left: 100px; top: 200px;" onclick="selectNode(this, 'start_1')">
+            <div class="node-header">
+                <span class="node-icon">🚀</span>
+                <span class="node-type">Start</span>
+            </div>
+            <div class="node-title">Start Content Creation</div>
+            <div class="node-description">Begin the daily content creation process</div>
+            <div class="connection-handle output"></div>
+        </div>
+
+        <div class="workflow-node node-action" style="left: 350px; top: 200px;" onclick="selectNode(this, 'action_1')">
+            <div class="node-header">
+                <span class="node-icon">⚡</span>
+                <span class="node-type">Action</span>
+            </div>
+            <div class="node-title">Generate Spiritual Content</div>
+            <div class="node-description">Create inspirational content using AI spiritual gurus</div>
+            <div class="connection-handle input"></div>
+            <div class="connection-handle output"></div>
+        </div>
+
+        <div class="workflow-node node-condition" style="left: 600px; top: 200px;" onclick="selectNode(this, 'condition_1')">
+            <div class="node-header">
+                <span class="node-icon">❓</span>
+                <span class="node-type">Condition</span>
+            </div>
+            <div class="node-title">Quality Check</div>
+            <div class="node-description">Verify content meets quality standards (>80% score)</div>
+            <div class="connection-handle input"></div>
+            <div class="connection-handle output"></div>
+        </div>
+
+        <div class="workflow-node node-approval" style="left: 850px; top: 100px;" onclick="selectNode(this, 'approval_1')">
+            <div class="node-header">
+                <span class="node-icon">✅</span>
+                <span class="node-type">Approval</span>
+            </div>
+            <div class="node-title">Editorial Review</div>
+            <div class="node-description">Human review for final approval</div>
+            <div class="connection-handle input"></div>
+            <div class="connection-handle output"></div>
+        </div>
+
+        <div class="workflow-node node-localization" style="left: 850px; top: 300px;" onclick="selectNode(this, 'localization_1')">
+            <div class="node-header">
+                <span class="node-icon">🌍</span>
+                <span class="node-type">Localization</span>
+            </div>
+            <div class="node-title">Multi-Language Translation</div>
+            <div class="node-description">Translate content to Spanish, French, Hindi</div>
+            <div class="connection-handle input"></div>
+            <div class="connection-handle output"></div>
+        </div>
+
+        <div class="workflow-node node-action" style="left: 1100px; top: 200px;" onclick="selectNode(this, 'action_2')">
+            <div class="node-header">
+                <span class="node-icon">⚡</span>
+                <span class="node-type">Action</span>
+            </div>
+            <div class="node-title">Publish Content</div>
+            <div class="node-description">Publish to website, mobile app, and social media</div>
+            <div class="connection-handle input"></div>
+            <div class="connection-handle output"></div>
+        </div>
+
+        <div class="workflow-node node-end" style="left: 1350px; top: 200px;" onclick="selectNode(this, 'end_1')">
+            <div class="node-header">
+                <span class="node-icon">🏁</span>
+                <span class="node-type">End</span>
+            </div>
+            <div class="node-title">Content Published</div>
+            <div class="node-description">Workflow completed successfully</div>
+            <div class="connection-handle input"></div>
+        </div>
+
+        <!-- Connection Lines -->
+        <svg class="connection-line" style="width: 100%; height: 100%;">
+            <!-- Start to Generate -->
+            <path d="M 240 232 Q 270 232 295 232 Q 320 232 350 232" 
+                  stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <text x="295" y="226" text-anchor="middle" class="text-xs" fill="#6b7280">success</text>
+            
+            <!-- Generate to Quality Check -->
+            <path d="M 490 232 Q 520 232 545 232 Q 570 232 600 232" 
+                  stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <text x="545" y="226" text-anchor="middle" class="text-xs" fill="#6b7280">success</text>
+            
+            <!-- Quality Check to Approval (high quality) -->
+            <path d="M 740 232 Q 770 232 795 166 Q 820 100 850 132" 
+                  stroke="#22c55e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <text x="795" y="160" text-anchor="middle" class="text-xs" fill="#22c55e">high quality</text>
+            
+            <!-- Quality Check to Localization (needs improvement) -->
+            <path d="M 740 232 Q 770 232 795 266 Q 820 300 850 332" 
+                  stroke="#f59e0b" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <text x="795" y="280" text-anchor="middle" class="text-xs" fill="#f59e0b">needs improvement</text>
+            
+            <!-- Approval to Publish -->
+            <path d="M 990 132 Q 1020 132 1045 166 Q 1070 200 1100 232" 
+                  stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <text x="1045" y="180" text-anchor="middle" class="text-xs" fill="#6b7280">approved</text>
+            
+            <!-- Localization to Publish -->
+            <path d="M 990 332 Q 1020 332 1045 298 Q 1070 264 1100 232" 
+                  stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <text x="1045" y="310" text-anchor="middle" class="text-xs" fill="#6b7280">translated</text>
+            
+            <!-- Publish to End -->
+            <path d="M 1240 232 Q 1270 232 1295 232 Q 1320 232 1350 232" 
+                  stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <text x="1295" y="226" text-anchor="middle" class="text-xs" fill="#6b7280">success</text>
+            
+            <!-- Arrow marker definition -->
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280"/>
+                </marker>
+            </defs>
+        </svg>
+
+        <!-- Node Details Panel (initially hidden) -->
+        <div class="details-panel" id="detailsPanel" style="display: none;">
+            <h3 id="nodeTitle">Node Details</h3>
+            <p id="nodeDescription">Select a node to view details</p>
+            <div id="nodeDetails"></div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Workflow Ready</span>
+            </div>
+            <span class="divider">|</span>
+            <span>Click nodes to inspect • Click Execute to run</span>
+        </div>
+    </div>
+
+    <script>
+        let selectedNode = null;
+        let isExecuting = false;
+
+        function selectNode(element, nodeId) {
+            // Remove previous selection
+            if (selectedNode) {
+                selectedNode.classList.remove('selected');
+            }
+            
+            // Select new node
+            selectedNode = element;
+            element.classList.add('selected');
+            
+            // Show details panel
+            showNodeDetails(nodeId);
+        }
+
+        function showNodeDetails(nodeId) {
+            const detailsPanel = document.getElementById('detailsPanel');
+            const nodeTitle = document.getElementById('nodeTitle');
+            const nodeDescription = document.getElementById('nodeDescription');
+            const nodeDetails = document.getElementById('nodeDetails');
+            
+            const nodeData = {
+                'start_1': {
+                    title: '🚀 Start Content Creation',
+                    description: 'Initiates the daily content creation workflow',
+                    details: {
+                        'Type': 'start',
+                        'Trigger': 'scheduled',
+                        'Schedule': 'Daily at 9:00 AM'
+                    }
+                },
+                'action_1': {
+                    title: '⚡ Generate Spiritual Content',
+                    description: 'Uses AI spiritual gurus to create inspirational content',
+                    details: {
+                        'Type': 'action',
+                        'Action': 'content_generation',
+                        'Guru Type': 'spiritual',
+                        'Template': 'daily_wisdom'
+                    }
+                },
+                'condition_1': {
+                    title: '❓ Quality Check',
+                    description: 'Evaluates content quality using AI metrics',
+                    details: {
+                        'Type': 'condition',
+                        'Expression': '${quality_score} > 0.8',
+                        'Threshold': '80%',
+                        'Metrics': 'clarity, relevance, spiritual_depth'
+                    }
+                },
+                'approval_1': {
+                    title: '✅ Editorial Review',
+                    description: 'Human review process for high-quality content',
+                    details: {
+                        'Type': 'approval',
+                        'Approvers': 'Editorial Team',
+                        'Timeout': '24 hours',
+                        'Auto-escalate': 'true'
+                    }
+                },
+                'localization_1': {
+                    title: '🌍 Multi-Language Translation',
+                    description: 'Translates content for global audience',
+                    details: {
+                        'Type': 'localization',
+                        'Languages': 'Spanish, French, Hindi',
+                        'Engine': 'Spiritual-aware AI',
+                        'Preserve Terms': 'dharma, karma, moksha'
+                    }
+                },
+                'action_2': {
+                    title: '⚡ Publish Content',
+                    description: 'Distributes content across all platforms',
+                    details: {
+                        'Type': 'action',
+                        'Action': 'multi_publish',
+                        'Platforms': 'Website, Mobile App, Social',
+                        'Format': 'Adaptive'
+                    }
+                },
+                'end_1': {
+                    title: '🏁 Content Published',
+                    description: 'Marks successful completion of workflow',
+                    details: {
+                        'Type': 'end',
+                        'Notifications': 'Team, Analytics',
+                        'Metrics': 'Tracked',
+                        'Status': 'Complete'
+                    }
+                }
+            };
+            
+            const data = nodeData[nodeId];
+            if (data) {
+                nodeTitle.textContent = data.title;
+                nodeDescription.textContent = data.description;
+                
+                let detailsHTML = '';
+                for (const [key, value] of Object.entries(data.details)) {
+                    detailsHTML += `
+                        <div class="detail-item">
+                            <span class="detail-label">${key}:</span>
+                            <span class="detail-value">${value}</span>
+                        </div>
+                    `;
+                }
+                nodeDetails.innerHTML = detailsHTML;
+                
+                detailsPanel.style.display = 'block';
+            }
+        }
+
+        function executeWorkflow() {
+            if (isExecuting) return;
+            
+            isExecuting = true;
+            const executeBtn = document.getElementById('executeBtn');
+            executeBtn.disabled = true;
+            executeBtn.innerHTML = '<span class="spin">🔄</span> Executing...';
+            
+            // Add executing animation to nodes
+            const nodes = document.querySelectorAll('.workflow-node');
+            nodes.forEach(node => node.classList.add('executing'));
+            
+            // Simulate workflow execution
+            setTimeout(() => {
+                // Remove executing animation
+                nodes.forEach(node => node.classList.remove('executing'));
+                
+                // Reset button
+                executeBtn.disabled = false;
+                executeBtn.innerHTML = '<span>▶️</span> Execute Workflow';
+                isExecuting = false;
+                
+                // Show success message
+                alert('🎉 Workflow Executed Successfully!\n\n' +
+                      '✅ Content Generated\n' +
+                      '✅ Quality Verified\n' +
+                      '✅ Editorial Approved\n' +
+                      '✅ Multi-language Translation\n' +
+                      '✅ Published to All Platforms\n\n' +
+                      'Total execution time: 2.3 seconds');
+            }, 3000);
+        }
+
+        // Auto-select first node on load
+        window.addEventListener('load', () => {
+            const firstNode = document.querySelector('.workflow-node');
+            if (firstNode) {
+                selectNode(firstNode, 'start_1');
+            }
+        });
+    </script>
+</body>
+</html>

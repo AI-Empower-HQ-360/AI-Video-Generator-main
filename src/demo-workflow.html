@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Automation Demo - AI Video Generator</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10/dist/framer-motion.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        .workflow-canvas { 
+            background-image: 
+                linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+                linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .connection-handle {
+            transition: all 0.2s ease;
+        }
+        .connection-handle:hover {
+            transform: scale(1.2);
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+        const { motion, AnimatePresence } = window.FramerMotion;
+
+        // Mock Node Types
+        const NODE_TYPES = {
+            start: { icon: '🚀', color: 'bg-green-500', label: 'Start' },
+            action: { icon: '⚡', color: 'bg-blue-500', label: 'Action' },
+            condition: { icon: '❓', color: 'bg-yellow-500', label: 'Condition' },
+            approval: { icon: '✅', color: 'bg-purple-500', label: 'Approval' },
+            localization: { icon: '🌍', color: 'bg-indigo-500', label: 'Localization' },
+            schedule: { icon: '⏰', color: 'bg-orange-500', label: 'Schedule' },
+            end: { icon: '🏁', color: 'bg-red-500', label: 'End' }
+        };
+
+        // Sample workflow data
+        const sampleWorkflow = {
+            name: "Daily Content Creation Workflow",
+            nodes: [
+                {
+                    id: 'start_1',
+                    node_type: 'start',
+                    name: 'Start Content Creation',
+                    description: 'Begin the daily content creation process',
+                    position_x: 100,
+                    position_y: 200
+                },
+                {
+                    id: 'action_1',
+                    node_type: 'action',
+                    name: 'Generate Spiritual Content',
+                    description: 'Create inspirational content using AI',
+                    action_type: 'content_generation',
+                    position_x: 350,
+                    position_y: 200
+                },
+                {
+                    id: 'condition_1',
+                    node_type: 'condition',
+                    name: 'Quality Check',
+                    description: 'Verify content meets quality standards',
+                    condition_expression: '${quality_score} greater_than 0.8',
+                    position_x: 600,
+                    position_y: 200
+                },
+                {
+                    id: 'approval_1',
+                    node_type: 'approval',
+                    name: 'Editorial Review',
+                    description: 'Human review for final approval',
+                    position_x: 850,
+                    position_y: 100
+                },
+                {
+                    id: 'localization_1',
+                    node_type: 'localization',
+                    name: 'Multi-Language Translation',
+                    description: 'Translate to multiple languages',
+                    localization_enabled: true,
+                    target_languages: ['es', 'fr', 'hi'],
+                    position_x: 850,
+                    position_y: 300
+                },
+                {
+                    id: 'action_2',
+                    node_type: 'action',
+                    name: 'Publish Content',
+                    description: 'Publish to all platforms',
+                    action_type: 'api_call',
+                    position_x: 1100,
+                    position_y: 200
+                },
+                {
+                    id: 'end_1',
+                    node_type: 'end',
+                    name: 'Content Published',
+                    description: 'Workflow completed successfully',
+                    position_x: 1350,
+                    position_y: 200
+                }
+            ],
+            connections: [
+                { from_node_id: 'start_1', to_node_id: 'action_1', condition: 'success' },
+                { from_node_id: 'action_1', to_node_id: 'condition_1', condition: 'success' },
+                { from_node_id: 'condition_1', to_node_id: 'approval_1', condition: 'true' },
+                { from_node_id: 'condition_1', to_node_id: 'localization_1', condition: 'false' },
+                { from_node_id: 'approval_1', to_node_id: 'action_2', condition: 'approved' },
+                { from_node_id: 'localization_1', to_node_id: 'action_2', condition: 'success' },
+                { from_node_id: 'action_2', to_node_id: 'end_1', condition: 'success' }
+            ]
+        };
+
+        // Workflow Node Component
+        const WorkflowNode = ({ node, isSelected, onSelect }) => {
+            const nodeType = NODE_TYPES[node.node_type] || NODE_TYPES.action;
+
+            return (
+                <motion.div
+                    className="absolute cursor-pointer select-none"
+                    style={{
+                        left: node.position_x,
+                        top: node.position_y,
+                        zIndex: isSelected ? 10 : 1
+                    }}
+                    onClick={() => onSelect(node.id)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    <div className={`
+                        ${nodeType.color} text-white rounded-lg p-4 shadow-lg border-2
+                        ${isSelected ? 'border-yellow-400 ring-2 ring-yellow-400' : 'border-transparent'}
+                        min-w-32 max-w-48 transition-all duration-200
+                    `}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xl">{nodeType.icon}</span>
+                            <span className="font-medium text-sm">{nodeType.label}</span>
+                        </div>
+                        
+                        <div className="text-xs font-medium mb-1 truncate">
+                            {node.name}
+                        </div>
+                        
+                        {node.description && (
+                            <div className="text-xs opacity-80 line-clamp-2">
+                                {node.description}
+                            </div>
+                        )}
+
+                        {/* Connection Handles */}
+                        <div className="connection-handle absolute -right-2 top-1/2 transform -translate-y-1/2 
+                                     w-4 h-4 bg-white border-2 border-gray-400 rounded-full
+                                     hover:bg-blue-200 transition-colors" />
+                        
+                        <div className="connection-handle absolute -left-2 top-1/2 transform -translate-y-1/2 
+                                     w-4 h-4 bg-white border-2 border-gray-400 rounded-full
+                                     hover:bg-green-200 transition-colors" />
+                    </div>
+                </motion.div>
+            );
+        };
+
+        // Connection Line Component
+        const ConnectionLine = ({ connection, fromNode, toNode }) => {
+            if (!fromNode || !toNode) return null;
+
+            const startX = fromNode.position_x + 96;
+            const startY = fromNode.position_y + 32;
+            const endX = toNode.position_x;
+            const endY = toNode.position_y + 32;
+
+            const midX = (startX + endX) / 2;
+            const midY = (startY + endY) / 2;
+
+            const path = `M ${startX} ${startY} Q ${midX} ${startY} ${midX} ${midY} Q ${midX} ${endY} ${endX} ${endY}`;
+
+            return (
+                <motion.svg
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ zIndex: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                >
+                    <path
+                        d={path}
+                        stroke="#6B7280"
+                        strokeWidth="2"
+                        fill="none"
+                        markerEnd="url(#arrowhead)"
+                        className="drop-shadow-sm"
+                    />
+                    
+                    {connection.condition && (
+                        <text
+                            x={midX}
+                            y={midY - 5}
+                            textAnchor="middle"
+                            className="text-xs fill-gray-600 font-medium"
+                            style={{ textShadow: '0 0 3px white' }}
+                        >
+                            {connection.condition}
+                        </text>
+                    )}
+                    
+                    <defs>
+                        <marker
+                            id="arrowhead"
+                            markerWidth="10"
+                            markerHeight="7"
+                            refX="9"
+                            refY="3.5"
+                            orient="auto"
+                        >
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#6B7280" />
+                        </marker>
+                    </defs>
+                </motion.svg>
+            );
+        };
+
+        // Main Demo Component
+        const WorkflowDemo = () => {
+            const [selectedNodeId, setSelectedNodeId] = useState(null);
+            const [isExecuting, setIsExecuting] = useState(false);
+
+            const selectedNode = sampleWorkflow.nodes.find(node => node.id === selectedNodeId);
+
+            const handleExecute = () => {
+                setIsExecuting(true);
+                setTimeout(() => {
+                    setIsExecuting(false);
+                    alert('🎉 Workflow executed successfully!\n\nContent created → Quality checked → Approved → Translated → Published');
+                }, 3000);
+            };
+
+            return (
+                <div className="h-screen bg-gray-50 relative overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-2xl">🔄</span>
+                                <h1 className="text-xl font-semibold">{sampleWorkflow.name}</h1>
+                            </div>
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                {sampleWorkflow.nodes.length} nodes, {sampleWorkflow.connections.length} connections
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleExecute}
+                                disabled={isExecuting}
+                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 
+                                          transition-colors disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {isExecuting ? (
+                                    <>
+                                        <span className="animate-spin">🔄</span>
+                                        Executing...
+                                    </>
+                                ) : (
+                                    <>
+                                        ▶️ Execute Workflow
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Workflow Canvas */}
+                    <div className="workflow-canvas relative h-full overflow-auto bg-gray-50">
+                        {/* Grid Background */}
+                        <div className="absolute inset-0 opacity-20" />
+
+                        {/* Connections */}
+                        {sampleWorkflow.connections.map((connection, index) => {
+                            const fromNode = sampleWorkflow.nodes.find(n => n.id === connection.from_node_id);
+                            const toNode = sampleWorkflow.nodes.find(n => n.id === connection.to_node_id);
+                            return (
+                                <ConnectionLine
+                                    key={index}
+                                    connection={connection}
+                                    fromNode={fromNode}
+                                    toNode={toNode}
+                                />
+                            );
+                        })}
+
+                        {/* Nodes */}
+                        {sampleWorkflow.nodes.map(node => (
+                            <WorkflowNode
+                                key={node.id}
+                                node={node}
+                                isSelected={node.id === selectedNodeId}
+                                onSelect={setSelectedNodeId}
+                            />
+                        ))}
+
+                        {/* Feature Showcase */}
+                        <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-4 max-w-80">
+                            <h3 className="font-semibold text-gray-900 mb-3">🎯 Workflow Features</h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <span>🚀</span>
+                                    <span>Visual drag-drop workflow builder</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>❓</span>
+                                    <span>Conditional logic and branching</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>✅</span>
+                                    <span>Approval chains and review processes</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>🌍</span>
+                                    <span>Multi-language localization</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>⏰</span>
+                                    <span>Automated scheduling</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>🏪</span>
+                                    <span>Template marketplace</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Node Details Panel */}
+                        {selectedNode && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4 max-w-64"
+                            >
+                                <h3 className="font-semibold text-gray-900 mb-2">
+                                    {NODE_TYPES[selectedNode.node_type].icon} {selectedNode.name}
+                                </h3>
+                                <p className="text-sm text-gray-600 mb-3">{selectedNode.description}</p>
+                                
+                                <div className="space-y-2 text-xs">
+                                    <div>
+                                        <span className="font-medium">Type:</span> {selectedNode.node_type}
+                                    </div>
+                                    {selectedNode.action_type && (
+                                        <div>
+                                            <span className="font-medium">Action:</span> {selectedNode.action_type}
+                                        </div>
+                                    )}
+                                    {selectedNode.condition_expression && (
+                                        <div>
+                                            <span className="font-medium">Condition:</span> {selectedNode.condition_expression}
+                                        </div>
+                                    )}
+                                    {selectedNode.target_languages && (
+                                        <div>
+                                            <span className="font-medium">Languages:</span> {selectedNode.target_languages.join(', ')}
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
+
+                    {/* Status Bar */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 
+                                    bg-white rounded-full px-4 py-2 shadow-lg flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span>Workflow Ready</span>
+                        </div>
+                        <div className="text-gray-400">|</div>
+                        <div>Click nodes to inspect • Click Execute to run</div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<WorkflowDemo />, document.getElementById('root'));
+    </script>
+</body>
+</html>
