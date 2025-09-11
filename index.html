@@ -4,7 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Empower Heart 360 - Spiritual Intelligence Revolution</title>
+    
+    <!-- Performance optimizations -->
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="AI-powered spiritual guidance platform with performance-optimized experience">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/static/css/style.css" as="style">
+    <link rel="preload" href="/static/js/main.js" as="script">
+    
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    
+    <!-- Critical CSS - inlined for performance -->
     <style>
+        /* Critical above-the-fold CSS */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -12,22 +26,48 @@
             color: white;
             font-family: Arial, sans-serif;
             padding: 20px;
+            /* Improve text rendering */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; padding: 40px 0; }
-        .header h1 { font-size: 3em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 10px; }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            /* Enable GPU acceleration */
+            transform: translateZ(0);
+            will-change: transform;
+        }
+        .header { 
+            text-align: center; 
+            padding: 40px 0; 
+            /* Optimize animations */
+            transform: translateZ(0);
+        }
+        .header h1 { 
+            font-size: 3em; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3); 
+            margin-bottom: 10px;
+            /* Optimize text rendering */
+            will-change: transform;
+        }
         .spiritual-platform {
             background: rgba(255,255,255,0.1);
             padding: 30px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
             margin: 40px 0;
+            /* Enable GPU acceleration for backdrop-filter */
+            transform: translateZ(0);
         }
         .guru-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin: 30px 0;
+            /* Optimize grid performance */
+            contain: layout;
+        }
         }
         .guru-card {
             background: rgba(255,255,255,0.2);
@@ -193,6 +233,47 @@
             } catch (error) {
                 responseArea.innerHTML = '<div style="color: #FFB6C1;">🌸 Connection interrupted. Please ensure the API is running.</div>';
             }
+        }
+        
+        // Performance optimization: Initialize performance monitoring and service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    // Register service worker for caching
+                    await navigator.serviceWorker.register('/static/js/sw.js');
+                    console.log('✓ Service Worker registered for performance optimization');
+                    
+                    // Initialize lazy loading for images
+                    const lazyImages = document.querySelectorAll('img[data-src]');
+                    if ('IntersectionObserver' in window && lazyImages.length > 0) {
+                        const imageObserver = new IntersectionObserver((entries) => {
+                            entries.forEach(entry => {
+                                if (entry.isIntersecting) {
+                                    const img = entry.target;
+                                    img.src = img.dataset.src;
+                                    img.removeAttribute('data-src');
+                                    imageObserver.unobserve(img);
+                                }
+                            });
+                        });
+                        lazyImages.forEach(img => imageObserver.observe(img));
+                    }
+                    
+                    // Performance monitoring
+                    if (performance && performance.timing) {
+                        const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+                        console.log(`✓ Page loaded in ${loadTime}ms`);
+                        
+                        // Report slow loads
+                        if (loadTime > 3000) {
+                            console.warn('Slow page load detected - consider optimizing');
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.warn('Performance optimization setup failed:', error);
+                }
+            });
         }
     </script>
 </body>
