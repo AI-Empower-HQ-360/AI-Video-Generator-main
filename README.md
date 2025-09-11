@@ -7,6 +7,27 @@
 
 AI Empower Heart is a spiritual guidance platform powered by artificial intelligence. It provides personalized guidance through various AI gurus specializing in different aspects of spiritual development.
 
+## 🌟 NEW: Interactive Video Features
+
+This platform now includes comprehensive interactive video capabilities:
+
+### ✨ Key Interactive Features
+- **🎯 Interactive Hotspots** - Clickable elements with spiritual insights
+- **🌊 Branching Narratives** - Choose your spiritual path with decision trees
+- **💬 Live Streaming & Chat** - Real-time community interaction
+- **🥽 VR/AR Support** - Immersive spiritual experiences
+- **🏆 Gamification** - Achievements, levels, and leaderboards
+- **🎤 Voice & Gesture Controls** - Hands-free interaction
+
+### 🚀 Quick Start Interactive Experience
+1. Start the backend: `cd backend && python app.py`
+2. Visit: `http://localhost:5000/interactive-video`
+3. Click "Begin Interactive Journey"
+4. Try voice commands: Say "help" to see available commands
+5. Enable VR/AR for immersive experiences
+
+For detailed documentation, see [INTERACTIVE_FEATURES_README.md](INTERACTIVE_FEATURES_README.md)
+
 ## Development
 
 This project uses GitHub Actions for continuous integration and deployment.

@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS, cross_origin
+from flask_socketio import SocketIO
 import os
 from datetime import datetime
 
@@ -18,6 +19,9 @@ CORS(app, resources={
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'spiritual-wisdom-key')
 app.config['DEBUG'] = True
 
+# Initialize SocketIO for real-time features
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 # Import API routes
 from api.gurus import gurus_bp
 from api.users import users_bp
@@ -25,6 +29,7 @@ from api.sessions import sessions_bp
 from api.slokas import slokas_bp
 from api.durable_endpoints import durable_bp
 from api.whisper_endpoints import whisper_bp
+from api.interactive_endpoints import interactive_bp, init_socketio
 
 # Configure CORS for Durable
 CORS(app, resources={
@@ -45,7 +50,11 @@ app.register_blueprint(users_bp, url_prefix='/api/users')
 app.register_blueprint(sessions_bp, url_prefix='/api/sessions')
 app.register_blueprint(slokas_bp, url_prefix='/api/slokas')
 app.register_blueprint(whisper_bp, url_prefix='/api/whisper')  # New Whisper endpoints
+app.register_blueprint(interactive_bp)  # Interactive video endpoints
 app.register_blueprint(durable_bp)  # No url_prefix as it has its own
+
+# Initialize SocketIO for interactive features
+init_socketio(app)
 
 @app.route('/')
 def home():
@@ -70,6 +79,11 @@ def spiritual_guru_video():
     """Render the spiritual guru video page"""
     return render_template('spiritual_guru_video.html')
 
+@app.route('/interactive-video')
+def interactive_video():
+    """Render the new interactive video experience"""
+    return render_template('interactive_video.html')
+
 @app.route('/api/test', methods=['GET', 'OPTIONS'])
 @cross_origin(origins=['https://empowerhub360.org', 'https://www.empowerhub360.org'])
 def test_connection():
@@ -89,4 +103,4 @@ def test():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
