@@ -5,6 +5,7 @@ import asyncio
 import requests
 from typing import Dict, Any, List, AsyncGenerator
 from datetime import datetime
+from .cost_management import CostManagementService
 
 class AIService:
     def __init__(self):
@@ -14,6 +15,9 @@ class AIService:
         
         # Initialize the OpenAI client
         self.client = openai.OpenAI(api_key=self.api_key)
+        
+        # Initialize cost management service
+        self.cost_manager = CostManagementService()
         
         # Default models for different purposes
         self.models = {
@@ -58,21 +62,42 @@ class AIService:
         guru_type: str, 
         question: str, 
         user_context: Dict = None,
-        stream: bool = False
+        stream: bool = False,
+        user_id: str = "anonymous"
     ) -> Dict[str, Any]:
         """
         Get AI-powered spiritual guidance from specified guru using workflow-specific ChatGPT configuration.
+        Now includes cost optimization, caching, and quota management.
         
         Args:
             guru_type: Type of guru (spiritual, sloka, meditation, etc.)
             question: User's question or request
             user_context: Optional user context for personalization
             stream: If True, stream the response
+            user_id: User identifier for quota tracking
             
         Returns:
-            Dict with response
+            Dict with response including cost information
         """
-        # Get workflow-specific configuration
+        # Get optimal strategy for cost management
+        optimization_strategy = self.cost_manager.optimize_prompt_strategy(guru_type, question, user_context)
+        
+        # Check user quota before proceeding
+        quota_check = self.cost_manager.check_user_quota(
+            user_id, 
+            optimization_strategy["estimated_tokens"],
+            optimization_strategy["estimated_cost"]
+        )
+        
+        if not quota_check["within_limits"]:
+            return {
+                "success": False,
+                "error": "User quota exceeded",
+                "quota_status": quota_check,
+                "error_type": "QuotaExceeded"
+            }
+        
+        # Get workflow-specific configuration or use optimized defaults
         if self.workflow_manager:
             workflow_config = self.workflow_manager.assign_chatgpt_to_workflow(guru_type, user_context)
             chatgpt_config = workflow_config['chatgpt_config']
@@ -81,11 +106,37 @@ class AIService:
             temperature = chatgpt_config['temperature']
             max_tokens = chatgpt_config['max_tokens']
         else:
-            # Fallback to default configuration
-            model = self.models['default']
+            # Use cost-optimized configuration
+            model = optimization_strategy['model']
             system_prompt = self.guru_prompts.get(guru_type, self.guru_prompts["spiritual"])
-            temperature = 0.7
-            max_tokens = 800
+            temperature = optimization_strategy['temperature']
+            max_tokens = optimization_strategy['max_tokens']
+        
+        # Check cache first
+        cache_key = self.cost_manager.get_cache_key(guru_type, question, model, temperature)
+        cached_response = self.cost_manager.get_cached_response(cache_key)
+        
+        if cached_response:
+            # Record cached usage (no cost)
+            self.cost_manager.record_usage(
+                user_id=user_id,
+                guru_type=guru_type,
+                model=model,
+                prompt_tokens=cached_response.get("prompt_tokens", 0),
+                completion_tokens=cached_response.get("completion_tokens", 0),
+                cached=True
+            )
+            
+            return {
+                "success": True,
+                "response": cached_response["response"],
+                "tokens_used": cached_response.get("total_tokens", 0),
+                "model": model,
+                "workflow_used": guru_type,
+                "cached": True,
+                "cost_usd": 0.0,
+                "quota_status": quota_check
+            }
         
         messages = [
             {
@@ -111,16 +162,52 @@ class AIService:
                     temperature=temperature, 
                     max_tokens=max_tokens
                 )
+                
+                # Calculate actual cost
+                prompt_tokens = response.usage.prompt_tokens
+                completion_tokens = response.usage.completion_tokens
+                total_tokens = response.usage.total_tokens
+                cost_usd = self.cost_manager.calculate_cost(model, prompt_tokens, completion_tokens)
+                
+                # Cache the response
+                response_data = {
+                    "response": response.choices[0].message.content,
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "total_tokens": total_tokens
+                }
+                self.cost_manager.cache_response(cache_key, response_data)
+                
+                # Record usage
+                self.cost_manager.record_usage(
+                    user_id=user_id,
+                    guru_type=guru_type,
+                    model=model,
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    cached=False
+                )
+                
                 return {
                     "success": True,
                     "response": response.choices[0].message.content,
-                    "tokens_used": response.usage.total_tokens,
+                    "tokens_used": total_tokens,
                     "model": response.model,
                     "workflow_used": guru_type,
+                    "cached": False,
+                    "cost_usd": cost_usd,
+                    "cost_breakdown": {
+                        "prompt_tokens": prompt_tokens,
+                        "completion_tokens": completion_tokens,
+                        "total_tokens": total_tokens,
+                        "model_pricing": self.cost_manager.MODEL_PRICING.get(model, {})
+                    },
+                    "quota_status": self.cost_manager.check_user_quota(user_id),
                     "configuration": {
                         "temperature": temperature,
-                        "max_tokens": max_tokens
-                    } if self.workflow_manager else None
+                        "max_tokens": max_tokens,
+                        "optimization_applied": True
+                    }
                 }
                 
             except openai.RateLimitError:
@@ -131,7 +218,8 @@ class AIService:
                 return {
                     "success": False,
                     "error": str(e),
-                    "error_type": type(e).__name__
+                    "error_type": type(e).__name__,
+                    "quota_status": quota_check
                 }
     
     async def get_spiritual_guidance_stream(
@@ -262,6 +350,83 @@ class AIService:
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
+
+    def get_cost_analytics(self, user_id: str = None, days: int = 30) -> Dict[str, Any]:
+        """Get cost analytics and usage statistics"""
+        return self.cost_manager.get_usage_analytics(user_id, days)
+    
+    def get_user_quota_status(self, user_id: str) -> Dict[str, Any]:
+        """Get current user quota status"""
+        return self.cost_manager.check_user_quota(user_id)
+    
+    def get_cost_alerts(self) -> List[Dict[str, Any]]:
+        """Get current cost alerts"""
+        return self.cost_manager.check_alerts()
+    
+    def update_user_quota(self, user_id: str, quota_updates: Dict[str, Any]) -> Dict[str, Any]:
+        """Update user quota limits"""
+        quota = self.cost_manager.get_user_quota(user_id)
+        
+        # Update allowed fields
+        allowed_fields = [
+            'daily_token_limit', 'daily_cost_limit', 
+            'monthly_token_limit', 'monthly_cost_limit'
+        ]
+        
+        for field, value in quota_updates.items():
+            if field in allowed_fields and isinstance(value, (int, float)) and value >= 0:
+                setattr(quota, field, value)
+        
+        self.cost_manager._save_data()
+        
+        return {
+            "success": True,
+            "message": "Quota updated successfully",
+            "new_quota": {
+                "daily_token_limit": quota.daily_token_limit,
+                "daily_cost_limit": quota.daily_cost_limit,
+                "monthly_token_limit": quota.monthly_token_limit,
+                "monthly_cost_limit": quota.monthly_cost_limit
+            }
+        }
+    
+    def get_prompt_optimization_suggestions(self, guru_type: str, question: str) -> Dict[str, Any]:
+        """Get suggestions for optimizing prompts to reduce costs"""
+        strategy = self.cost_manager.optimize_prompt_strategy(guru_type, question)
+        
+        suggestions = []
+        
+        # Length-based suggestions
+        if len(question) > 300:
+            suggestions.append({
+                "type": "length_optimization",
+                "message": "Consider shortening your question to reduce token usage",
+                "potential_savings": "10-20% cost reduction"
+            })
+        
+        # Model suggestions
+        if strategy["model"] == "gpt-4" and guru_type in ["meditation", "spiritual"]:
+            suggestions.append({
+                "type": "model_optimization", 
+                "message": "Consider using gpt-3.5-turbo for general guidance (80% cost savings)",
+                "alternative_model": "gpt-3.5-turbo"
+            })
+        
+        # Caching suggestions
+        cache_key = self.cost_manager.get_cache_key(guru_type, question, strategy["model"], strategy["temperature"])
+        if self.cost_manager.get_cached_response(cache_key):
+            suggestions.append({
+                "type": "cache_available",
+                "message": "Similar question found in cache - no additional cost",
+                "savings": "100% cost savings"
+            })
+        
+        return {
+            "optimal_strategy": strategy,
+            "suggestions": suggestions,
+            "estimated_cost": strategy["estimated_cost"],
+            "estimated_tokens": strategy["estimated_tokens"]
+        }
 
 class ClaudeService:
     def __init__(self, api_key=None):
