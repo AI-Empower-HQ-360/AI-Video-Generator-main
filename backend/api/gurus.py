@@ -1,3 +1,34 @@
+"""
+Spiritual Gurus API Module
+
+This module provides RESTful API endpoints for interacting with AI-powered spiritual gurus.
+Each guru specializes in different aspects of spiritual development and provides personalized
+guidance using OpenAI's GPT models.
+
+Key Features:
+    - Multiple specialized spiritual gurus (spiritual, meditation, bhakti, karma, yoga, sloka)
+    - Standard and streaming response modes
+    - Workflow-based configuration management
+    - Context-aware personalized responses
+    - Error handling and fallback mechanisms
+
+API Endpoints:
+    - GET /gurus - List all available gurus
+    - GET /gurus/{guru_type} - Get specific guru information
+    - POST /gurus/ask - Ask a guru for guidance (standard response)
+    - POST /gurus/ask/stream - Ask a guru for guidance (streaming response)
+    - GET /gurus/workflows - Get available AI workflows
+    - GET /gurus/workflow/{guru_type}/config - Get workflow configuration
+
+Dependencies:
+    - OpenAI API for AI response generation
+    - Workflow manager for dynamic configuration
+    - Asyncio for asynchronous operations
+
+Author: AI-Empower-HQ-360
+License: MIT
+"""
+
 from flask import Blueprint, request, jsonify, Response
 import openai
 import os
@@ -6,18 +37,28 @@ import json
 from services.ai_service import AIService
 from workflow_assignment import ChatGPTWorkflowManager
 
+# Create Flask blueprint for organizing guru-related routes
+# Blueprints allow modular organization of routes and can be registered with multiple URL prefixes
 gurus_bp = Blueprint('gurus', __name__)
 
-# Initialize AI Service and Workflow Manager
+# Initialize AI Service and Workflow Manager with error handling
+# These services may fail to initialize if API keys are missing or invalid
 try:
+    # AI Service handles OpenAI API communication and response generation
     ai_service = AIService()
+    # Workflow Manager provides dynamic configuration for different guru types
     workflow_manager = ChatGPTWorkflowManager()
 except ValueError as e:
+    # Log initialization failure but allow the application to start
+    # This enables graceful degradation when AI services are unavailable
     print(f"Warning: AI Service not initialized - {e}")
     ai_service = None
     workflow_manager = None
 
 # Spiritual Gurus Configuration
+# This dictionary defines the available AI spiritual gurus, their specializations,
+# and the system prompts that shape their personalities and response styles.
+# Each guru represents a different aspect of spiritual development and wisdom.
 SPIRITUAL_GURUS = {
     "bojan": {
         "name": "🌟 AI Bojan Guru",
@@ -64,6 +105,32 @@ SPIRITUAL_GURUS = {
 
 @gurus_bp.route('/', methods=['GET'])
 def get_all_gurus():
+    """
+    Get all available spiritual gurus and their information.
+    
+    This endpoint provides a complete list of available AI spiritual gurus,
+    including their names, specializations, and unique identifiers.
+    Used by the frontend to populate guru selection interfaces.
+    
+    Returns:
+        JSON response containing:
+        - success: Boolean indicating request success
+        - gurus: Dictionary of all available gurus with their details
+        - total: Total number of available gurus
+        
+    Example Response:
+        {
+            "success": true,
+            "gurus": {
+                "spiritual": {
+                    "name": "🙏 AI Spiritual Guru",
+                    "specialization": "Soul consciousness and eternal identity"
+                },
+                ...
+            },
+            "total": 7
+        }
+    """
     return jsonify({
         'success': True,
         'gurus': SPIRITUAL_GURUS,
@@ -72,6 +139,32 @@ def get_all_gurus():
 
 @gurus_bp.route('/<guru_type>', methods=['GET'])
 def get_guru(guru_type):
+    """
+    Get information about a specific spiritual guru.
+    
+    Retrieves detailed information about a single guru based on the guru type.
+    Used for displaying guru-specific information and validation.
+    
+    Args:
+        guru_type (str): The type/identifier of the guru to retrieve
+        
+    Returns:
+        JSON response with guru information or error if not found
+        
+    HTTP Status Codes:
+        200: Success - guru found and returned
+        404: Not Found - guru type doesn't exist
+        
+    Example:
+        GET /api/gurus/spiritual
+        Response: {
+            "success": true,
+            "guru": {
+                "name": "🙏 AI Spiritual Guru",
+                "specialization": "Soul consciousness and eternal identity"
+            }
+        }
+    """
     if guru_type in SPIRITUAL_GURUS:
         return jsonify({
             'success': True,

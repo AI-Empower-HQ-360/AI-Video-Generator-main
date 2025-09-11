@@ -1,3 +1,37 @@
+"""
+AI Service Module for Spiritual Guidance Platform
+
+This module provides AI-powered spiritual guidance using OpenAI's GPT models.
+It includes services for different types of spiritual gurus, workflow management,
+and text enhancement capabilities.
+
+Key Features:
+    - Multiple AI guru personalities (spiritual, meditation, bhakti, etc.)
+    - Streaming and non-streaming responses
+    - Workflow-based configuration management
+    - Sentiment analysis and text enhancement
+    - Error handling and retry logic
+    - Rate limiting awareness
+
+Dependencies:
+    - openai: OpenAI API client for GPT models
+    - asyncio: Asynchronous programming support
+    - requests: HTTP client for external APIs
+
+Environment Variables:
+    - OPENAI_API_KEY: Required OpenAI API key
+    - CLAUDE_API_KEY: Optional Claude API key for alternative AI service
+
+Error Handling:
+    - Rate limiting with exponential backoff
+    - API timeout handling
+    - Model fallback strategies
+    - Graceful degradation for service unavailability
+
+Author: AI-Empower-HQ-360
+License: MIT
+"""
+
 import openai
 import os
 import json
@@ -7,37 +41,86 @@ from typing import Dict, Any, List, AsyncGenerator
 from datetime import datetime
 
 class AIService:
+    """
+    Main AI service class for spiritual guidance using OpenAI GPT models.
+    
+    This class handles all AI-related operations including:
+    - Spiritual guidance generation
+    - Text streaming capabilities  
+    - Sentiment analysis
+    - Text enhancement and translation
+    - Error handling and retries
+    
+    The service supports multiple AI guru personalities with specialized prompts
+    and can integrate with workflow management for dynamic configuration.
+    """
+    
     def __init__(self):
+        """
+        Initialize the AI service with OpenAI client and configuration.
+        
+        Sets up the OpenAI client, configures default models, timeout settings,
+        and imports optional workflow manager for dynamic guru configuration.
+        
+        Raises:
+            ValueError: If OPENAI_API_KEY environment variable is not set
+            
+        Environment Variables Required:
+            - OPENAI_API_KEY: OpenAI API key for authentication
+        """
+        # Retrieve and validate OpenAI API key from environment
         self.api_key = os.environ.get('OPENAI_API_KEY')
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY environment variable is required")
         
-        # Initialize the OpenAI client
+        # Initialize the OpenAI client with the API key
         self.client = openai.OpenAI(api_key=self.api_key)
         
-        # Default models for different purposes
+        # Default models for different purposes and use cases
+        # These can be overridden by workflow configuration
         self.models = {
-            'default': 'gpt-4',  # Most capable model for complex tasks
-            'fast': 'gpt-3.5-turbo',  # Faster, cost-effective for simple tasks
-            'analysis': 'gpt-4',  # Best for detailed analysis
-            'creative': 'gpt-4'  # Best for creative and nuanced responses
+            'default': 'gpt-4',         # Most capable model for complex spiritual guidance
+            'fast': 'gpt-3.5-turbo',    # Faster, cost-effective for simple queries
+            'analysis': 'gpt-4',        # Best for detailed analysis and insights
+            'creative': 'gpt-4'         # Best for creative and nuanced responses
         }
         
-        # Configure timeouts and retries
-        self.timeout_seconds = 30
-        self.max_retries = 3
-        self.retry_delay = 1  # seconds
+        # Configure timeouts and retry settings for robust API interaction
+        self.timeout_seconds = 30    # Request timeout to prevent hanging
+        self.max_retries = 3         # Maximum retry attempts for failed requests
+        self.retry_delay = 1         # Base delay between retries (seconds)
         
-        # Import workflow manager for dynamic configuration
+        # Import and initialize workflow manager for dynamic configuration
+        # This allows for runtime configuration of guru personalities and models
         try:
             from workflow_assignment import ChatGPTWorkflowManager
             self.workflow_manager = ChatGPTWorkflowManager()
         except ImportError:
+            # Graceful degradation if workflow manager is not available
             self.workflow_manager = None
     
     @property
     def guru_prompts(self) -> Dict[str, str]:
-        """Get the system prompts for different guru types."""
+        """
+        Get the system prompts for different spiritual guru types.
+        
+        These prompts define the personality, knowledge base, and response style
+        for each type of spiritual guru. They serve as the foundation for
+        generating contextually appropriate spiritual guidance.
+        
+        Returns:
+            Dict[str, str]: Mapping of guru types to their system prompts
+            
+        Guru Types:
+            - spiritual: General spiritual wisdom and soul consciousness
+            - sloka: Sanskrit verses from sacred texts with translations
+            - meditation: Inner peace, mindfulness, and mental stillness  
+            - bhakti: Devotional practices and divine love
+            - karma: Ethics, dharma, and righteous action
+            - yoga: Physical practices, breath work, and energy alignment
+            
+        Note: These prompts can be overridden by workflow manager configuration
+        """
         return {
             "spiritual": """You are the AI Spiritual Guru, a wise teacher focused on soul consciousness and eternal identity. 
                           Help users understand they are eternal souls, not temporary bodies. Provide profound spiritual insights.""",
