@@ -23,87 +23,166 @@
     .metric-beginner {
         color: #6c757d;
     }
+    
+    /* Improved focus indicators for dashboard */
+    .card:focus-within {
+        outline: 3px solid #ffc107;
+        outline-offset: 2px;
+    }
+    
+    /* High contrast support */
+    @media (prefers-contrast: high) {
+        .metric-card {
+            border-left-width: 6px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Spiritual Journey Dashboard</h1>
+<header class="mb-4">
+    <h1>Spiritual Journey Dashboard</h1>
+    <p class="lead">Track your progress on the path to spiritual wellness</p>
+</header>
 
-<div class="row">
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card metric-card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Meditation Sessions</h5>
-                <p class="metric-value metric-{{ data.meditation_level }}">{{ data.meditation_count }}</p>
-                <p class="card-text">Classification: {{ data.classification|capitalize }}</p>
-            </div>
+<section aria-labelledby="metrics-heading">
+    <h2 id="metrics-heading" class="visually-hidden">Your Spiritual Metrics</h2>
+    
+    <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <article class="card metric-card h-100" role="group" aria-labelledby="meditation-title">
+                <div class="card-body">
+                    <h3 class="card-title" id="meditation-title">Meditation Sessions</h3>
+                    <p class="metric-value metric-{{ data.meditation_level }}" aria-label="{{ data.meditation_count }} meditation sessions completed">
+                        {{ data.meditation_count }}
+                    </p>
+                    <p class="card-text">Classification: <span class="fw-bold">{{ data.classification|capitalize }}</span></p>
+                </div>
+            </article>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-4">
+            <article class="card metric-card h-100" role="group" aria-labelledby="average-title">
+                <div class="card-body">
+                    <h3 class="card-title" id="average-title">Daily Average</h3>
+                    <p class="metric-value" aria-label="Daily average heart rate: {{ data.daily_average }} beats per minute">
+                        {{ data.daily_average }} BPM
+                    </p>
+                    <p class="card-text">Based on today's measurements</p>
+                </div>
+            </article>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-4">
+            <article class="card metric-card h-100" role="group" aria-labelledby="trend-title">
+                <div class="card-body">
+                    <h3 class="card-title" id="trend-title">Weekly Trend</h3>
+                    <p class="metric-value" aria-label="Weekly trend: {{ data.weekly_trend }}">
+                        {{ data.weekly_trend|capitalize }}
+                    </p>
+                    <p class="card-text">Compared to last week</p>
+                </div>
+            </article>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-4">
+            <article class="card metric-card h-100" role="group" aria-labelledby="score-title">
+                <div class="card-body">
+                    <h3 class="card-title" id="score-title">Heart Health Score</h3>
+                    <p class="metric-value" aria-label="Heart health score: 85 out of 100">
+                        85/100
+                    </p>
+                    <p class="card-text">Based on all metrics</p>
+                </div>
+            </article>
         </div>
     </div>
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card metric-card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Daily Average</h5>
-                <p class="metric-value">{{ data.daily_average }} BPM</p>
-                <p class="card-text">Based on today's measurements</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card metric-card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Weekly Trend</h5>
-                <p class="metric-value">{{ data.weekly_trend|capitalize }}</p>
-                <p class="card-text">Compared to last week</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card metric-card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Heart Health Score</h5>
-                <p class="metric-value">85/100</p>
-                <p class="card-text">Based on all metrics</p>
-            </div>
-        </div>
-    </div>
-</div>
+</section>
 
-<div class="row mt-4">
+<section class="row mt-4" aria-labelledby="charts-heading">
+    <h2 id="charts-heading" class="visually-hidden">Charts and Recommendations</h2>
+    
     <div class="col-lg-8">
-        <div class="card mb-4">
-            <div class="card-header">
-                Heart Rate Trends
-            </div>
+        <article class="card mb-4">
+            <header class="card-header">
+                <h3 class="mb-0">Heart Rate Trends</h3>
+            </header>
             <div class="card-body">
-                <!-- Placeholder for chart -->
-                <div class="bg-light p-5 text-center">
+                <!-- Placeholder for chart with proper accessibility -->
+                <div class="bg-light p-5 text-center" role="img" 
+                     aria-label="Heart rate chart placeholder - chart will be displayed here showing your heart rate trends over time">
                     <p class="mb-0">Heart rate chart will be displayed here</p>
+                    <small class="text-muted">Interactive chart coming soon</small>
                 </div>
             </div>
-        </div>
+        </article>
     </div>
+    
     <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                Recommendations
-            </div>
+        <article class="card mb-4">
+            <header class="card-header">
+                <h3 class="mb-0">Recommendations</h3>
+            </header>
             <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Maintain regular exercise routine</li>
-                    <li class="list-group-item">Stay hydrated throughout the day</li>
-                    <li class="list-group-item">Consider meditation for stress management</li>
-                    <li class="list-group-item">Schedule your next heart checkup</li>
-                </ul>
+                <nav aria-label="Health recommendations">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <span aria-hidden="true">🏃‍♂️</span> Maintain regular exercise routine
+                        </li>
+                        <li class="list-group-item">
+                            <span aria-hidden="true">💧</span> Stay hydrated throughout the day
+                        </li>
+                        <li class="list-group-item">
+                            <span aria-hidden="true">🧘‍♀️</span> Consider meditation for stress management
+                        </li>
+                        <li class="list-group-item">
+                            <span aria-hidden="true">📅</span> Schedule your next heart checkup
+                        </li>
+                    </ul>
+                </nav>
             </div>
-        </div>
+        </article>
     </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Placeholder for dashboard JavaScript
-    const dashboardData = JSON.parse('{{ data|tojson|safe }}');
-    console.log('Dashboard loaded with data:', dashboardData);
+    // Enhanced dashboard JavaScript with accessibility features
+    document.addEventListener('DOMContentLoaded', function() {
+        const dashboardData = JSON.parse('{{ data|tojson|safe }}');
+        console.log('Dashboard loaded with data:', dashboardData);
+        
+        // Announce dashboard load to screen readers
+        announceToScreenReader('Spiritual journey dashboard loaded with your latest metrics and recommendations');
+        
+        // Add keyboard navigation for metric cards
+        const metricCards = document.querySelectorAll('.metric-card');
+        metricCards.forEach(card => {
+            card.setAttribute('tabindex', '0');
+            card.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    // Future: could expand card or show details
+                    const title = card.querySelector('.card-title').textContent;
+                    announceToScreenReader(`Focused on ${title} metric card`);
+                }
+            });
+        });
+    });
+    
+    function announceToScreenReader(message) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('aria-atomic', 'true');
+        announcement.className = 'visually-hidden';
+        announcement.textContent = message;
+        
+        document.body.appendChild(announcement);
+        
+        setTimeout(() => {
+            document.body.removeChild(announcement);
+        }, 1000);
+    }
 </script>
 {% endblock %}
