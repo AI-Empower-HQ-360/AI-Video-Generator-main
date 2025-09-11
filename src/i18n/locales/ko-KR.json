@@ -1,0 +1,185 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "open": "Open",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "submit": "Submit",
+    "reset": "Reset"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "contact": "Contact",
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "support": "Support"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "email": "Email Address",
+      "password": "Password",
+      "remember_me": "Remember Me",
+      "forgot_password": "Forgot Password?",
+      "no_account": "Don't have an account?",
+      "sign_up_link": "Sign up here"
+    },
+    "signup": {
+      "title": "Create Account",
+      "first_name": "First Name",
+      "last_name": "Last Name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirm_password": "Confirm Password",
+      "terms_agreement": "I agree to the {{terms}} and {{privacy}}",
+      "terms_of_service": "Terms of Service",
+      "privacy_policy": "Privacy Policy",
+      "have_account": "Already have an account?",
+      "sign_in_link": "Sign in here"
+    },
+    "password_reset": {
+      "title": "Reset Password",
+      "description": "Enter your email address and we'll send you a link to reset your password.",
+      "email": "Email Address",
+      "send_link": "Send Reset Link",
+      "back_to_login": "Back to Login"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {{name}}!",
+    "overview": "Overview",
+    "recent_activity": "Recent Activity",
+    "quick_actions": "Quick Actions",
+    "statistics": "Statistics",
+    "notifications": "Notifications"
+  },
+  "ai_features": {
+    "video_generation": {
+      "title": "AI Video Generation",
+      "description": "Create stunning videos with AI assistance",
+      "start_generating": "Start Generating",
+      "upload_content": "Upload Content",
+      "select_style": "Select Style",
+      "generate_video": "Generate Video",
+      "processing": "Processing your video...",
+      "download_ready": "Your video is ready for download!"
+    },
+    "spiritual_guidance": {
+      "title": "Spiritual Guidance",
+      "description": "Connect with AI gurus for spiritual wisdom",
+      "available_gurus": "Available Gurus",
+      "start_session": "Start Session",
+      "ask_question": "Ask a Question",
+      "meditation_guide": "Meditation Guide",
+      "daily_wisdom": "Daily Wisdom"
+    }
+  },
+  "gurus": {
+    "title": "Spiritual Gurus",
+    "description": "Seek wisdom from our AI-powered spiritual guides",
+    "categories": {
+      "meditation": "Meditation",
+      "mindfulness": "Mindfulness",
+      "philosophy": "Philosophy",
+      "wellness": "Wellness",
+      "spirituality": "Spirituality"
+    }
+  },
+  "settings": {
+    "account": {
+      "title": "Account Settings",
+      "personal_info": "Personal Information",
+      "email_preferences": "Email Preferences",
+      "privacy_settings": "Privacy Settings",
+      "delete_account": "Delete Account"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "language": "Language",
+      "timezone": "Timezone",
+      "currency": "Currency",
+      "theme": "Theme",
+      "notifications": "Notifications"
+    },
+    "billing": {
+      "title": "Billing & Subscription",
+      "current_plan": "Current Plan",
+      "billing_history": "Billing History",
+      "payment_methods": "Payment Methods",
+      "upgrade_plan": "Upgrade Plan"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to access this resource.",
+    "not_found": "The requested resource was not found.",
+    "validation": "Please check your input and try again.",
+    "server_error": "Server error. Please try again later."
+  },
+  "success_messages": {
+    "saved": "Changes saved successfully!",
+    "created": "Created successfully!",
+    "updated": "Updated successfully!",
+    "deleted": "Deleted successfully!",
+    "sent": "Sent successfully!"
+  },
+  "currency": {
+    "usd": "US Dollar",
+    "eur": "Euro",
+    "gbp": "British Pound",
+    "jpy": "Japanese Yen",
+    "sgd": "Singapore Dollar",
+    "cny": "Chinese Yuan",
+    "inr": "Indian Rupee",
+    "aed": "UAE Dirham"
+  },
+  "regions": {
+    "us_east": "US East",
+    "us_west": "US West", 
+    "europe": "Europe",
+    "asia_pacific": "Asia Pacific",
+    "middle_east": "Middle East"
+  },
+  "privacy": {
+    "cookie_consent": {
+      "title": "Cookie Preferences",
+      "description": "We use cookies to enhance your experience and provide personalized content.",
+      "necessary": "Necessary Cookies",
+      "functional": "Functional Cookies",
+      "analytics": "Analytics Cookies",
+      "advertising": "Advertising Cookies",
+      "accept_all": "Accept All",
+      "accept_selected": "Accept Selected",
+      "manage_preferences": "Manage Preferences"
+    },
+    "data_request": {
+      "title": "Data Request",
+      "download_data": "Download My Data",
+      "delete_data": "Delete My Data", 
+      "correct_data": "Correct My Data",
+      "request_submitted": "Your request has been submitted and will be processed within 30 days."
+    }
+  }
+}

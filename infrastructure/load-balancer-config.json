@@ -1,0 +1,248 @@
+{
+  "load_balancer_config": {
+    "global_load_balancer": {
+      "type": "anycast",
+      "algorithm": "geo_proximity",
+      "health_check_interval": 30,
+      "failure_threshold": 3,
+      "recovery_threshold": 2,
+      "timeout": 10,
+      "sticky_sessions": false
+    },
+    "regional_load_balancers": {
+      "us-east-1": {
+        "type": "application",
+        "algorithm": "least_connections",
+        "health_check_path": "/api/health",
+        "health_check_port": 5000,
+        "health_check_protocol": "HTTP",
+        "targets": [
+          {
+            "id": "backend-1",
+            "ip": "10.0.11.10",
+            "port": 5000,
+            "weight": 100
+          },
+          {
+            "id": "backend-2", 
+            "ip": "10.0.12.10",
+            "port": 5000,
+            "weight": 100
+          },
+          {
+            "id": "backend-3",
+            "ip": "10.0.13.10",
+            "port": 5000,
+            "weight": 100
+          }
+        ]
+      },
+      "us-west-2": {
+        "type": "application",
+        "algorithm": "round_robin",
+        "health_check_path": "/api/health",
+        "health_check_port": 5000,
+        "health_check_protocol": "HTTP",
+        "targets": [
+          {
+            "id": "backend-1",
+            "ip": "10.0.11.10",
+            "port": 5000,
+            "weight": 100
+          },
+          {
+            "id": "backend-2",
+            "ip": "10.0.12.10", 
+            "port": 5000,
+            "weight": 100
+          }
+        ]
+      },
+      "eu-west-1": {
+        "type": "application",
+        "algorithm": "least_connections",
+        "health_check_path": "/api/health",
+        "health_check_port": 5000,
+        "health_check_protocol": "HTTP",
+        "targets": [
+          {
+            "id": "backend-1",
+            "ip": "10.0.11.10",
+            "port": 5000,
+            "weight": 100
+          },
+          {
+            "id": "backend-2",
+            "ip": "10.0.12.10",
+            "port": 5000,
+            "weight": 100
+          }
+        ]
+      }
+    },
+    "traffic_routing": {
+      "geo_routing": {
+        "north_america": {
+          "primary": "us-east-1",
+          "backup": ["us-west-2"]
+        },
+        "south_america": {
+          "primary": "us-east-1", 
+          "backup": ["us-west-2"]
+        },
+        "europe": {
+          "primary": "eu-west-1",
+          "backup": ["eu-central-1", "us-east-1"]
+        },
+        "asia_pacific": {
+          "primary": "ap-southeast-1",
+          "backup": ["ap-northeast-1", "us-west-2"]
+        },
+        "middle_east": {
+          "primary": "me-south-1",
+          "backup": ["eu-west-1", "ap-southeast-1"]
+        },
+        "africa": {
+          "primary": "eu-west-1",
+          "backup": ["me-south-1", "us-east-1"]
+        }
+      },
+      "latency_routing": {
+        "enabled": true,
+        "health_check_required": true,
+        "regions": [
+          {
+            "region": "us-east-1",
+            "weight": 100,
+            "set_identifier": "us-east"
+          },
+          {
+            "region": "us-west-2",
+            "weight": 100,
+            "set_identifier": "us-west"
+          },
+          {
+            "region": "eu-west-1",
+            "weight": 100,
+            "set_identifier": "eu-west"
+          },
+          {
+            "region": "ap-southeast-1",
+            "weight": 100,
+            "set_identifier": "asia-southeast"
+          }
+        ]
+      },
+      "weighted_routing": {
+        "production_traffic": {
+          "us-east-1": 40,
+          "us-west-2": 20,
+          "eu-west-1": 25,
+          "ap-southeast-1": 15
+        },
+        "canary_deployment": {
+          "us-east-1": 95,
+          "us-east-1-canary": 5
+        }
+      }
+    },
+    "health_checks": {
+      "backend_health": {
+        "path": "/api/health",
+        "method": "GET",
+        "expected_status": 200,
+        "timeout": 5,
+        "interval": 30,
+        "healthy_threshold": 2,
+        "unhealthy_threshold": 3,
+        "headers": {
+          "User-Agent": "HealthChecker/1.0"
+        }
+      },
+      "database_health": {
+        "path": "/api/health/database",
+        "method": "GET", 
+        "expected_status": 200,
+        "timeout": 10,
+        "interval": 60,
+        "healthy_threshold": 2,
+        "unhealthy_threshold": 2
+      },
+      "external_services_health": {
+        "path": "/api/health/external",
+        "method": "GET",
+        "expected_status": 200,
+        "timeout": 15,
+        "interval": 120,
+        "healthy_threshold": 1,
+        "unhealthy_threshold": 3
+      }
+    },
+    "circuit_breaker": {
+      "failure_threshold": 5,
+      "recovery_timeout": 60,
+      "expected_recovery_time": 30,
+      "half_open_max_calls": 3
+    },
+    "rate_limiting": {
+      "global_limits": {
+        "requests_per_second": 1000,
+        "requests_per_minute": 10000,
+        "burst_capacity": 2000
+      },
+      "regional_limits": {
+        "us-east-1": {
+          "requests_per_second": 400,
+          "requests_per_minute": 4000
+        },
+        "us-west-2": {
+          "requests_per_second": 200,
+          "requests_per_minute": 2000
+        },
+        "eu-west-1": {
+          "requests_per_second": 250,
+          "requests_per_minute": 2500
+        },
+        "ap-southeast-1": {
+          "requests_per_second": 150,
+          "requests_per_minute": 1500
+        }
+      },
+      "per_ip_limits": {
+        "requests_per_second": 10,
+        "requests_per_minute": 100,
+        "burst_capacity": 20
+      }
+    }
+  },
+  "monitoring": {
+    "metrics": [
+      "request_count",
+      "error_rate", 
+      "response_time",
+      "active_connections",
+      "queue_depth",
+      "cpu_utilization",
+      "memory_utilization",
+      "disk_io",
+      "network_io"
+    ],
+    "alerts": {
+      "high_error_rate": {
+        "threshold": 5,
+        "period": 300,
+        "evaluation_periods": 2
+      },
+      "high_response_time": {
+        "threshold": 2000,
+        "period": 300,
+        "evaluation_periods": 3
+      },
+      "low_healthy_targets": {
+        "threshold": 1,
+        "period": 60,
+        "evaluation_periods": 1
+      }
+    }
+  }
+}

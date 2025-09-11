@@ -1,0 +1,220 @@
+version: '3.8'
+
+services:
+  # Frontend service with regional configuration
+  frontend:
+    build:
+      context: .
+      target: frontend-build
+    volumes:
+      - ./src:/frontend/src
+      - ./static:/frontend/static
+      - ./templates:/frontend/templates
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - REACT_APP_REGION=${AWS_REGION:-us-east-1}
+      - REACT_APP_API_URL=${API_URL:-http://localhost:5000}
+      - REACT_APP_CDN_URL=${CDN_URL:-}
+      - REACT_APP_SUPPORTED_LANGUAGES=${SUPPORTED_LANGUAGES:-en-US,es-ES}
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend service with regional middleware
+  backend:
+    build:
+      context: .
+      target: backend
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - FLASK_DEBUG=${FLASK_DEBUG:-0}
+      - SECRET_KEY=${SECRET_KEY:-production_key_change_me}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/heartdb}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - EXCHANGE_RATES_API_KEY=${EXCHANGE_RATES_API_KEY}
+      # Regional configuration
+      - PRIMARY_REGION=${PRIMARY_REGION:-us-east-1}
+      - FAILOVER_REGIONS=${FAILOVER_REGIONS:-us-west-2,eu-west-1}
+      - SUPPORTED_CURRENCIES=${SUPPORTED_CURRENCIES:-USD,EUR,GBP,JPY}
+      - COMPLIANCE_FRAMEWORKS=${COMPLIANCE_FRAMEWORKS:-SOC2,HIPAA}
+      # CDN configuration
+      - CDN_DOMAIN=${CDN_DOMAIN:-}
+      - CDN_ENABLED=${CDN_ENABLED:-false}
+    volumes:
+      - ./backend:/app/backend
+      - ./infrastructure:/app/infrastructure
+      - ./tests:/app/tests
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL with regional replication support
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-heartdb}
+      - POSTGRES_REPLICATION_MODE=${POSTGRES_REPLICATION_MODE:-master}
+      - POSTGRES_REPLICATION_USER=${POSTGRES_REPLICATION_USER:-replicator}
+      - POSTGRES_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD:-replicator_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./infrastructure/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+      - ./infrastructure/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  # NGINX for load balancing and SSL termination
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./infrastructure/nginx/sites-available:/etc/nginx/sites-available
+      - ./infrastructure/ssl:/etc/nginx/ssl
+      - ./static:/var/www/static
+    depends_on:
+      - frontend
+      - backend
+    environment:
+      - NGINX_REGION=${AWS_REGION:-us-east-1}
+      - UPSTREAM_BACKEND=backend:5000
+      - UPSTREAM_FRONTEND=frontend:3000
+      - SSL_ENABLED=${SSL_ENABLED:-false}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring and metrics
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - backend
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+  # Log aggregation
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
+    profiles:
+      - logging
+
+  logstash:
+    image: logstash:8.11.0
+    volumes:
+      - ./infrastructure/logging/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+    profiles:
+      - logging
+
+  kibana:
+    image: kibana:8.11.0
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    profiles:
+      - logging
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -1,0 +1,297 @@
+{
+  "currencies": {
+    "USD": {
+      "name": "US Dollar",
+      "symbol": "$",
+      "code": "USD",
+      "decimal_places": 2,
+      "regions": ["US", "CA"],
+      "payment_providers": {
+        "stripe": {
+          "enabled": true,
+          "account_id": "acct_us",
+          "supported_methods": ["card", "bank_transfer", "apple_pay", "google_pay"]
+        },
+        "paypal": {
+          "enabled": true,
+          "account_id": "paypal_us",
+          "supported_methods": ["paypal", "venmo"]
+        }
+      }
+    },
+    "EUR": {
+      "name": "Euro",
+      "symbol": "€",
+      "code": "EUR", 
+      "decimal_places": 2,
+      "regions": ["DE", "FR", "IT", "ES", "NL", "IE"],
+      "payment_providers": {
+        "stripe": {
+          "enabled": true,
+          "account_id": "acct_eu",
+          "supported_methods": ["card", "sepa_debit", "giropay", "sofort", "bancontact", "ideal"]
+        },
+        "paypal": {
+          "enabled": true,
+          "account_id": "paypal_eu",
+          "supported_methods": ["paypal"]
+        }
+      }
+    },
+    "GBP": {
+      "name": "British Pound",
+      "symbol": "£",
+      "code": "GBP",
+      "decimal_places": 2,
+      "regions": ["GB"],
+      "payment_providers": {
+        "stripe": {
+          "enabled": true,
+          "account_id": "acct_gb",
+          "supported_methods": ["card", "bacs_debit", "uk_direct_debit"]
+        },
+        "paypal": {
+          "enabled": true,
+          "account_id": "paypal_gb", 
+          "supported_methods": ["paypal"]
+        }
+      }
+    },
+    "JPY": {
+      "name": "Japanese Yen",
+      "symbol": "¥",
+      "code": "JPY",
+      "decimal_places": 0,
+      "regions": ["JP"],
+      "payment_providers": {
+        "stripe": {
+          "enabled": true,
+          "account_id": "acct_jp",
+          "supported_methods": ["card", "konbini", "au_becs_debit"]
+        },
+        "paypal": {
+          "enabled": true,
+          "account_id": "paypal_jp",
+          "supported_methods": ["paypal"]
+        }
+      }
+    },
+    "SGD": {
+      "name": "Singapore Dollar",
+      "symbol": "S$",
+      "code": "SGD",
+      "decimal_places": 2,
+      "regions": ["SG"],
+      "payment_providers": {
+        "stripe": {
+          "enabled": true,
+          "account_id": "acct_sg",
+          "supported_methods": ["card", "grabpay", "alipay"]
+        },
+        "paypal": {
+          "enabled": true,
+          "account_id": "paypal_sg",
+          "supported_methods": ["paypal"]
+        }
+      }
+    },
+    "CNY": {
+      "name": "Chinese Yuan",
+      "symbol": "¥",
+      "code": "CNY", 
+      "decimal_places": 2,
+      "regions": ["CN"],
+      "payment_providers": {
+        "alipay": {
+          "enabled": true,
+          "account_id": "alipay_cn",
+          "supported_methods": ["alipay"]
+        },
+        "wechat_pay": {
+          "enabled": true,
+          "account_id": "wechat_cn",
+          "supported_methods": ["wechat_pay"]
+        }
+      }
+    },
+    "INR": {
+      "name": "Indian Rupee",
+      "symbol": "₹",
+      "code": "INR",
+      "decimal_places": 2,
+      "regions": ["IN"],
+      "payment_providers": {
+        "razorpay": {
+          "enabled": true,
+          "account_id": "razorpay_in",
+          "supported_methods": ["card", "upi", "netbanking", "wallet"]
+        },
+        "stripe": {
+          "enabled": true,
+          "account_id": "acct_in",
+          "supported_methods": ["card", "upi"]
+        }
+      }
+    },
+    "AED": {
+      "name": "UAE Dirham",
+      "symbol": "د.إ",
+      "code": "AED",
+      "decimal_places": 2,
+      "regions": ["AE"],
+      "payment_providers": {
+        "stripe": {
+          "enabled": true,
+          "account_id": "acct_ae",
+          "supported_methods": ["card"]
+        },
+        "paypal": {
+          "enabled": true,
+          "account_id": "paypal_ae",
+          "supported_methods": ["paypal"]
+        }
+      }
+    }
+  },
+  "regional_pricing": {
+    "us-east-1": {
+      "currency": "USD",
+      "tax_rate": 0.08,
+      "pricing_tiers": {
+        "basic": 29.99,
+        "premium": 79.99,
+        "enterprise": 199.99
+      }
+    },
+    "us-west-2": {
+      "currency": "USD",
+      "tax_rate": 0.10,
+      "pricing_tiers": {
+        "basic": 29.99,
+        "premium": 79.99,
+        "enterprise": 199.99
+      }
+    },
+    "eu-west-1": {
+      "currency": "EUR",
+      "tax_rate": 0.20,
+      "pricing_tiers": {
+        "basic": 24.99,
+        "premium": 64.99,
+        "enterprise": 164.99
+      }
+    },
+    "eu-central-1": {
+      "currency": "EUR",
+      "tax_rate": 0.19,
+      "pricing_tiers": {
+        "basic": 24.99,
+        "premium": 64.99,
+        "enterprise": 164.99
+      }
+    },
+    "ap-southeast-1": {
+      "currency": "SGD",
+      "tax_rate": 0.07,
+      "pricing_tiers": {
+        "basic": 39.99,
+        "premium": 109.99,
+        "enterprise": 269.99
+      }
+    },
+    "ap-northeast-1": {
+      "currency": "JPY",
+      "tax_rate": 0.10,
+      "pricing_tiers": {
+        "basic": 3299,
+        "premium": 8799,
+        "enterprise": 21999
+      }
+    },
+    "me-south-1": {
+      "currency": "AED",
+      "tax_rate": 0.05,
+      "pricing_tiers": {
+        "basic": 109.99,
+        "premium": 294.99,
+        "enterprise": 734.99
+      }
+    }
+  },
+  "exchange_rates": {
+    "api_provider": "exchangerates-api.io",
+    "api_key_env": "EXCHANGE_RATES_API_KEY",
+    "update_interval": 3600,
+    "base_currency": "USD",
+    "cache_duration": 1800
+  },
+  "payment_settings": {
+    "webhook_endpoints": {
+      "stripe": "/api/payments/webhooks/stripe",
+      "paypal": "/api/payments/webhooks/paypal",
+      "razorpay": "/api/payments/webhooks/razorpay",
+      "alipay": "/api/payments/webhooks/alipay",
+      "wechat_pay": "/api/payments/webhooks/wechat"
+    },
+    "security": {
+      "encryption_algorithm": "AES-256-GCM",
+      "pci_compliance": true,
+      "fraud_detection": true,
+      "3d_secure": true
+    },
+    "retry_policy": {
+      "max_retries": 3,
+      "backoff_strategy": "exponential",
+      "initial_delay": 1000,
+      "max_delay": 30000
+    }
+  },
+  "localization_rules": {
+    "tax_calculation": {
+      "US": "exclusive",
+      "EU": "inclusive",
+      "JP": "exclusive",
+      "SG": "exclusive",
+      "AE": "exclusive"
+    },
+    "invoice_requirements": {
+      "US": ["tax_id"],
+      "EU": ["vat_number", "address"],
+      "JP": ["consumption_tax"],
+      "SG": ["gst_number"],
+      "AE": ["trn_number"]
+    },
+    "currency_display": {
+      "symbol_position": {
+        "USD": "before",
+        "EUR": "after", 
+        "GBP": "before",
+        "JPY": "before",
+        "SGD": "before",
+        "CNY": "before",
+        "INR": "before",
+        "AED": "before"
+      },
+      "thousand_separator": {
+        "USD": ",",
+        "EUR": ".",
+        "GBP": ",",
+        "JPY": ",",
+        "SGD": ",",
+        "CNY": ",",
+        "INR": ",",
+        "AED": ","
+      },
+      "decimal_separator": {
+        "USD": ".",
+        "EUR": ",",
+        "GBP": ".",
+        "JPY": "",
+        "SGD": ".",
+        "CNY": ".",
+        "INR": ".",
+        "AED": "."
+      }
+    }
+  }
+}

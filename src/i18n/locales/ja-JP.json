@@ -1,0 +1,101 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "search": "検索",
+    "filter": "フィルター",
+    "sort": "並び替え",
+    "next": "次へ",
+    "previous": "前へ",
+    "close": "閉じる",
+    "open": "開く",
+    "yes": "はい",
+    "no": "いいえ",
+    "ok": "OK",
+    "submit": "送信",
+    "reset": "リセット"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "about": "概要",
+    "services": "サービス",
+    "contact": "お問い合わせ",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "signup": "新規登録",
+    "dashboard": "ダッシュボード",
+    "profile": "プロフィール",
+    "settings": "設定",
+    "help": "ヘルプ",
+    "support": "サポート"
+  },
+  "auth": {
+    "login": {
+      "title": "ログイン",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "remember_me": "ログイン状態を保持",
+      "forgot_password": "パスワードをお忘れですか？",
+      "no_account": "アカウントをお持ちでない方は",
+      "sign_up_link": "こちらから新規登録"
+    },
+    "signup": {
+      "title": "アカウント作成",
+      "first_name": "名",
+      "last_name": "姓",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "confirm_password": "パスワード確認",
+      "terms_agreement": "{{terms}}と{{privacy}}に同意します",
+      "terms_of_service": "利用規約",
+      "privacy_policy": "プライバシーポリシー",
+      "have_account": "既にアカウントをお持ちですか？",
+      "sign_in_link": "こちらからログイン"
+    }
+  },
+  "dashboard": {
+    "welcome": "お帰りなさい、{{name}}さん！",
+    "overview": "概要",
+    "recent_activity": "最近の活動",
+    "quick_actions": "クイックアクション",
+    "statistics": "統計",
+    "notifications": "通知"
+  },
+  "ai_features": {
+    "video_generation": {
+      "title": "AI動画生成",
+      "description": "AIアシスタントで素晴らしい動画を作成",
+      "start_generating": "生成開始",
+      "upload_content": "コンテンツをアップロード",
+      "select_style": "スタイルを選択",
+      "generate_video": "動画を生成",
+      "processing": "動画を処理中...",
+      "download_ready": "動画のダウンロード準備ができました！"
+    },
+    "spiritual_guidance": {
+      "title": "スピリチュアルガイダンス",
+      "description": "AIグルと繋がり、精神的な知恵を得る",
+      "available_gurus": "利用可能なグル",
+      "start_session": "セッション開始",
+      "ask_question": "質問する",
+      "meditation_guide": "瞑想ガイド",
+      "daily_wisdom": "今日の知恵"
+    }
+  },
+  "currency": {
+    "usd": "米ドル",
+    "eur": "ユーロ",
+    "gbp": "英ポンド",
+    "jpy": "日本円",
+    "sgd": "シンガポールドル",
+    "cny": "人民元",
+    "inr": "インドルピー",
+    "aed": "UAEディルハム"
+  }
+}

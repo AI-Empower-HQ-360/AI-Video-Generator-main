@@ -1,0 +1,101 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "search": "Suchen",
+    "filter": "Filter",
+    "sort": "Sortieren",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "close": "Schließen",
+    "open": "Öffnen",
+    "yes": "Ja",
+    "no": "Nein",
+    "ok": "OK",
+    "submit": "Senden",
+    "reset": "Zurücksetzen"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "services": "Dienstleistungen",
+    "contact": "Kontakt",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "signup": "Registrieren",
+    "dashboard": "Dashboard",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "help": "Hilfe",
+    "support": "Support"
+  },
+  "auth": {
+    "login": {
+      "title": "Anmelden",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "remember_me": "Angemeldet bleiben",
+      "forgot_password": "Passwort vergessen?",
+      "no_account": "Noch kein Konto?",
+      "sign_up_link": "Hier registrieren"
+    },
+    "signup": {
+      "title": "Konto erstellen",
+      "first_name": "Vorname",
+      "last_name": "Nachname",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "confirm_password": "Passwort bestätigen",
+      "terms_agreement": "Ich stimme den {{terms}} und der {{privacy}} zu",
+      "terms_of_service": "Nutzungsbedingungen",
+      "privacy_policy": "Datenschutzerklärung",
+      "have_account": "Bereits ein Konto?",
+      "sign_in_link": "Hier anmelden"
+    }
+  },
+  "dashboard": {
+    "welcome": "Willkommen zurück, {{name}}!",
+    "overview": "Übersicht",
+    "recent_activity": "Kürzliche Aktivität",
+    "quick_actions": "Schnellaktionen",
+    "statistics": "Statistiken",
+    "notifications": "Benachrichtigungen"
+  },
+  "ai_features": {
+    "video_generation": {
+      "title": "KI-Video-Generierung",
+      "description": "Erstellen Sie beeindruckende Videos mit KI-Unterstützung",
+      "start_generating": "Generierung starten",
+      "upload_content": "Inhalt hochladen",
+      "select_style": "Stil auswählen",
+      "generate_video": "Video generieren",
+      "processing": "Video wird verarbeitet...",
+      "download_ready": "Ihr Video ist zum Download bereit!"
+    },
+    "spiritual_guidance": {
+      "title": "Spirituelle Führung",
+      "description": "Verbinden Sie sich mit KI-Gurus für spirituelle Weisheit",
+      "available_gurus": "Verfügbare Gurus",
+      "start_session": "Sitzung starten",
+      "ask_question": "Frage stellen",
+      "meditation_guide": "Meditationsführer",
+      "daily_wisdom": "Tägliche Weisheit"
+    }
+  },
+  "currency": {
+    "usd": "US-Dollar",
+    "eur": "Euro",
+    "gbp": "Britisches Pfund",
+    "jpy": "Japanischer Yen",
+    "sgd": "Singapur-Dollar",
+    "cny": "Chinesischer Yuan",
+    "inr": "Indische Rupie",
+    "aed": "VAE-Dirham"
+  }
+}

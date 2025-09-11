@@ -1,0 +1,294 @@
+{
+  "compliance_frameworks": {
+    "GDPR": {
+      "name": "General Data Protection Regulation",
+      "regions": ["EU"],
+      "countries": ["DE", "FR", "IT", "ES", "NL", "BE", "IE", "AT", "PL", "SE", "DK", "FI", "PT", "GR", "CZ", "HU", "RO", "BG", "HR", "SI", "SK", "EE", "LV", "LT", "LU", "CY", "MT"],
+      "requirements": {
+        "data_processing": {
+          "lawful_basis_required": true,
+          "consent_management": true,
+          "data_minimization": true,
+          "purpose_limitation": true
+        },
+        "individual_rights": {
+          "right_to_access": true,
+          "right_to_rectification": true,
+          "right_to_erasure": true,
+          "right_to_portability": true,
+          "right_to_object": true,
+          "right_to_restrict_processing": true
+        },
+        "data_protection": {
+          "encryption_at_rest": true,
+          "encryption_in_transit": true,
+          "pseudonymization": true,
+          "data_breach_notification": 72
+        },
+        "cross_border_transfers": {
+          "adequacy_decision_required": true,
+          "standard_contractual_clauses": true,
+          "binding_corporate_rules": true
+        }
+      }
+    },
+    "CCPA": {
+      "name": "California Consumer Privacy Act",
+      "regions": ["US"],
+      "states": ["CA"],
+      "requirements": {
+        "consumer_rights": {
+          "right_to_know": true,
+          "right_to_delete": true,
+          "right_to_opt_out": true,
+          "right_to_non_discrimination": true
+        },
+        "disclosure_requirements": {
+          "privacy_policy": true,
+          "data_collection_notice": true,
+          "categories_disclosed": true
+        }
+      }
+    },
+    "HIPAA": {
+      "name": "Health Insurance Portability and Accountability Act",
+      "regions": ["US"],
+      "requirements": {
+        "safeguards": {
+          "administrative": true,
+          "physical": true,
+          "technical": true
+        },
+        "minimum_necessary": true,
+        "business_associate_agreements": true,
+        "breach_notification": true
+      }
+    },
+    "SOC2": {
+      "name": "Service Organization Control 2",
+      "regions": ["US", "CA"],
+      "requirements": {
+        "trust_principles": {
+          "security": true,
+          "availability": true,
+          "processing_integrity": true,
+          "confidentiality": true,
+          "privacy": true
+        }
+      }
+    },
+    "PDPA_Singapore": {
+      "name": "Personal Data Protection Act Singapore",
+      "regions": ["SG"],
+      "requirements": {
+        "consent_management": true,
+        "purpose_limitation": true,
+        "data_accuracy": true,
+        "data_protection": true,
+        "data_retention": true,
+        "data_breach_notification": true
+      }
+    },
+    "PIPL": {
+      "name": "Personal Information Protection Law China",
+      "regions": ["CN"],
+      "requirements": {
+        "data_localization": true,
+        "cross_border_transfer_approval": true,
+        "data_protection_impact_assessment": true,
+        "individual_rights": true
+      }
+    }
+  },
+  "data_residency": {
+    "regions": {
+      "us-east-1": {
+        "primary_jurisdiction": "US",
+        "backup_regions": ["us-west-2"],
+        "data_types": {
+          "user_data": {
+            "location": "us-east-1",
+            "encryption": "AES-256",
+            "backup_location": "us-west-2"
+          },
+          "financial_data": {
+            "location": "us-east-1",
+            "encryption": "AES-256-GCM",
+            "backup_location": "us-west-2",
+            "compliance": ["SOC2", "HIPAA"]
+          },
+          "logs": {
+            "location": "us-east-1",
+            "retention": "7_years",
+            "backup_location": "us-west-2"
+          }
+        }
+      },
+      "eu-west-1": {
+        "primary_jurisdiction": "IE",
+        "backup_regions": ["eu-central-1"],
+        "data_types": {
+          "user_data": {
+            "location": "eu-west-1",
+            "encryption": "AES-256",
+            "backup_location": "eu-central-1",
+            "no_cross_border_transfer": true
+          },
+          "financial_data": {
+            "location": "eu-west-1", 
+            "encryption": "AES-256-GCM",
+            "backup_location": "eu-central-1",
+            "compliance": ["GDPR", "SOC2"]
+          },
+          "logs": {
+            "location": "eu-west-1",
+            "retention": "2_years",
+            "backup_location": "eu-central-1"
+          }
+        }
+      },
+      "ap-southeast-1": {
+        "primary_jurisdiction": "SG",
+        "backup_regions": ["ap-northeast-1"],
+        "data_types": {
+          "user_data": {
+            "location": "ap-southeast-1",
+            "encryption": "AES-256",
+            "backup_location": "ap-northeast-1"
+          },
+          "financial_data": {
+            "location": "ap-southeast-1",
+            "encryption": "AES-256-GCM", 
+            "backup_location": "ap-northeast-1",
+            "compliance": ["PDPA_Singapore", "SOC2"]
+          }
+        }
+      },
+      "me-south-1": {
+        "primary_jurisdiction": "BH",
+        "backup_regions": ["eu-west-1"],
+        "data_types": {
+          "user_data": {
+            "location": "me-south-1",
+            "encryption": "AES-256",
+            "backup_location": "eu-west-1"
+          },
+          "financial_data": {
+            "location": "me-south-1",
+            "encryption": "AES-256-GCM",
+            "backup_location": "eu-west-1",
+            "compliance": ["SOC2"]
+          }
+        }
+      }
+    },
+    "data_classification": {
+      "public": {
+        "encryption_required": false,
+        "cross_border_allowed": true,
+        "retention_period": "indefinite"
+      },
+      "internal": {
+        "encryption_required": true,
+        "cross_border_allowed": true,
+        "retention_period": "7_years"
+      },
+      "confidential": {
+        "encryption_required": true,
+        "cross_border_allowed": false,
+        "retention_period": "7_years"
+      },
+      "restricted": {
+        "encryption_required": true,
+        "cross_border_allowed": false,
+        "retention_period": "as_required_by_law",
+        "access_control": "role_based"
+      }
+    }
+  },
+  "privacy_controls": {
+    "cookie_management": {
+      "categories": {
+        "necessary": {
+          "required": true,
+          "description": "Essential for website functionality"
+        },
+        "functional": {
+          "required": false,
+          "description": "Enhance user experience"
+        },
+        "analytics": {
+          "required": false,
+          "description": "Help us understand how users interact with our website"
+        },
+        "advertising": {
+          "required": false,
+          "description": "Used to show relevant advertisements"
+        }
+      },
+      "consent_duration": "12_months",
+      "withdrawal_mechanism": true
+    },
+    "data_subject_requests": {
+      "automated_processing": true,
+      "verification_required": true,
+      "response_time": "30_days",
+      "supported_formats": ["JSON", "CSV", "PDF"]
+    },
+    "audit_logging": {
+      "enabled": true,
+      "events": [
+        "data_access",
+        "data_modification",
+        "data_deletion",
+        "consent_given",
+        "consent_withdrawn",
+        "privacy_settings_changed"
+      ],
+      "retention_period": "7_years"
+    }
+  },
+  "regional_settings": {
+    "us-east-1": {
+      "applicable_laws": ["CCPA", "HIPAA", "SOC2"],
+      "data_retention": {
+        "default": "7_years",
+        "financial": "7_years",
+        "health": "6_years",
+        "logs": "7_years"
+      },
+      "breach_notification": {
+        "authorities": ["FTC", "state_attorneys_general"],
+        "timeline": "60_days",
+        "individuals": "without_unreasonable_delay"
+      }
+    },
+    "eu-west-1": {
+      "applicable_laws": ["GDPR", "SOC2"],
+      "data_retention": {
+        "default": "2_years",
+        "financial": "6_years",
+        "marketing": "3_years",
+        "logs": "2_years"
+      },
+      "breach_notification": {
+        "authorities": ["DPC_Ireland"],
+        "timeline": "72_hours",
+        "individuals": "without_undue_delay"
+      }
+    },
+    "ap-southeast-1": {
+      "applicable_laws": ["PDPA_Singapore", "SOC2"],
+      "data_retention": {
+        "default": "3_years",
+        "financial": "5_years",
+        "logs": "2_years"
+      },
+      "breach_notification": {
+        "authorities": ["PDPC_Singapore"],
+        "timeline": "3_days",
+        "individuals": "as_soon_as_practicable"
+      }
+    }
+  }
+}

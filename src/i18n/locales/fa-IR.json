@@ -1,0 +1,185 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "next": "التالي",
+    "previous": "السابق",
+    "close": "إغلاق",
+    "open": "فتح",
+    "yes": "نعم",
+    "no": "لا",
+    "ok": "موافق",
+    "submit": "إرسال",
+    "reset": "إعادة تعيين"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "about": "حول",
+    "services": "الخدمات",
+    "contact": "اتصل بنا",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "signup": "إنشاء حساب",
+    "dashboard": "لوحة التحكم",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "help": "المساعدة",
+    "support": "الدعم"
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "email": "عنوان البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "remember_me": "تذكرني",
+      "forgot_password": "هل نسيت كلمة المرور؟",
+      "no_account": "ليس لديك حساب؟",
+      "sign_up_link": "سجل هنا"
+    },
+    "signup": {
+      "title": "إنشاء حساب",
+      "first_name": "الاسم الأول",
+      "last_name": "اسم العائلة",
+      "email": "عنوان البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirm_password": "تأكيد كلمة المرور",
+      "terms_agreement": "أوافق على {{terms}} و {{privacy}}",
+      "terms_of_service": "شروط الخدمة",
+      "privacy_policy": "سياسة الخصوصية",
+      "have_account": "لديك حساب بالفعل؟",
+      "sign_in_link": "سجل الدخول هنا"
+    },
+    "password_reset": {
+      "title": "إعادة تعيين كلمة المرور",
+      "description": "أدخل عنوان بريدك الإلكتروني وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.",
+      "email": "عنوان البريد الإلكتروني",
+      "send_link": "إرسال رابط الإعادة",
+      "back_to_login": "العودة إلى تسجيل الدخول"
+    }
+  },
+  "dashboard": {
+    "welcome": "أهلاً وسهلاً، {{name}}!",
+    "overview": "نظرة عامة",
+    "recent_activity": "النشاط الأخير",
+    "quick_actions": "إجراءات سريعة",
+    "statistics": "الإحصائيات",
+    "notifications": "الإشعارات"
+  },
+  "ai_features": {
+    "video_generation": {
+      "title": "إنتاج الفيديو بالذكاء الاصطناعي",
+      "description": "أنشئ مقاطع فيديو مذهلة بمساعدة الذكاء الاصطناعي",
+      "start_generating": "بدء الإنتاج",
+      "upload_content": "رفع المحتوى",
+      "select_style": "اختيار النمط",
+      "generate_video": "إنتاج الفيديو",
+      "processing": "جاري معالجة الفيديو الخاص بك...",
+      "download_ready": "الفيديو الخاص بك جاهز للتحميل!"
+    },
+    "spiritual_guidance": {
+      "title": "الإرشاد الروحي",
+      "description": "تواصل مع المعلمين الروحيين للحصول على الحكمة",
+      "available_gurus": "المعلمون المتاحون",
+      "start_session": "بدء جلسة",
+      "ask_question": "طرح سؤال",
+      "meditation_guide": "دليل التأمل",
+      "daily_wisdom": "الحكمة اليومية"
+    }
+  },
+  "gurus": {
+    "title": "المعلمون الروحيون",
+    "description": "اطلب الحكمة من مرشدينا الروحيين المدعومين بالذكاء الاصطناعي",
+    "categories": {
+      "meditation": "التأمل",
+      "mindfulness": "اليقظة الذهنية",
+      "philosophy": "الفلسفة",
+      "wellness": "العافية",
+      "spirituality": "الروحانية"
+    }
+  },
+  "settings": {
+    "account": {
+      "title": "إعدادات الحساب",
+      "personal_info": "المعلومات الشخصية",
+      "email_preferences": "تفضيلات البريد الإلكتروني",
+      "privacy_settings": "إعدادات الخصوصية",
+      "delete_account": "حذف الحساب"
+    },
+    "preferences": {
+      "title": "التفضيلات",
+      "language": "اللغة",
+      "timezone": "المنطقة الزمنية",
+      "currency": "العملة",
+      "theme": "المظهر",
+      "notifications": "الإشعارات"
+    },
+    "billing": {
+      "title": "الفواتير والاشتراك",
+      "current_plan": "الخطة الحالية",
+      "billing_history": "تاريخ الفواتير",
+      "payment_methods": "طرق الدفع",
+      "upgrade_plan": "ترقية الخطة"
+    }
+  },
+  "errors": {
+    "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "network": "خطأ في الشبكة. يرجى التحقق من اتصالك.",
+    "unauthorized": "غير مصرح لك بالوصول إلى هذا المورد.",
+    "not_found": "لم يتم العثور على المورد المطلوب.",
+    "validation": "يرجى التحقق من إدخالك والمحاولة مرة أخرى.",
+    "server_error": "خطأ في الخادم. يرجى المحاولة لاحقاً."
+  },
+  "success_messages": {
+    "saved": "تم حفظ التغييرات بنجاح!",
+    "created": "تم الإنشاء بنجاح!",
+    "updated": "تم التحديث بنجاح!",
+    "deleted": "تم الحذف بنجاح!",
+    "sent": "تم الإرسال بنجاح!"
+  },
+  "currency": {
+    "usd": "الدولار الأمريكي",
+    "eur": "اليورو",
+    "gbp": "الجنيه الإسترليني",
+    "jpy": "الين الياباني",
+    "sgd": "دولار سنغافورة",
+    "cny": "اليوان الصيني",
+    "inr": "الروبية الهندية",
+    "aed": "الدرهم الإماراتي"
+  },
+  "regions": {
+    "us_east": "شرق الولايات المتحدة",
+    "us_west": "غرب الولايات المتحدة",
+    "europe": "أوروبا",
+    "asia_pacific": "آسيا والمحيط الهادئ",
+    "middle_east": "الشرق الأوسط"
+  },
+  "privacy": {
+    "cookie_consent": {
+      "title": "تفضيلات ملفات تعريف الارتباط",
+      "description": "نستخدم ملفات تعريف الارتباط لتحسين تجربتك وتقديم محتوى مخصص.",
+      "necessary": "ملفات تعريف الارتباط الضرورية",
+      "functional": "ملفات تعريف الارتباط الوظيفية",
+      "analytics": "ملفات تعريف الارتباط التحليلية",
+      "advertising": "ملفات تعريف الارتباط الإعلانية",
+      "accept_all": "قبول الكل",
+      "accept_selected": "قبول المحدد",
+      "manage_preferences": "إدارة التفضيلات"
+    },
+    "data_request": {
+      "title": "طلب البيانات",
+      "download_data": "تحميل بياناتي",
+      "delete_data": "حذف بياناتي",
+      "correct_data": "تصحيح بياناتي",
+      "request_submitted": "تم إرسال طلبك وسيتم معالجته خلال 30 يوماً."
+    }
+  }
+}
