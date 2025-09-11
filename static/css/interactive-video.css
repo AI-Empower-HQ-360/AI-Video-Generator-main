@@ -1,0 +1,1178 @@
+/* Interactive Video Player Styles */
+
+.interactive-video-wrapper {
+    display: flex;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.video-container {
+    position: relative;
+    flex: 2;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#main-video {
+    width: 100%;
+    height: auto;
+    min-height: 400px;
+    border-radius: 10px;
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.hotspot-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+}
+
+.video-sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 300px;
+}
+
+.achievement-panel,
+.progress-panel,
+.chat-panel {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 20px;
+    color: white;
+}
+
+.achievement-panel h3,
+.progress-panel h3,
+.chat-panel h3 {
+    color: #FFD700;
+    margin-bottom: 15px;
+    font-size: 18px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    padding-bottom: 8px;
+}
+
+/* Achievement Styles */
+.achievement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.achievement-item.unlocked {
+    background: rgba(255, 215, 0, 0.2);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.achievement-item.locked {
+    background: rgba(255, 255, 255, 0.05);
+    opacity: 0.6;
+}
+
+.achievement-icon {
+    font-size: 24px;
+    width: 30px;
+    text-align: center;
+}
+
+.achievement-info h4 {
+    margin: 0;
+    font-size: 14px;
+    color: #FFD700;
+}
+
+.achievement-info p {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Achievement Notification */
+.achievement-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #000;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    z-index: 1000;
+    animation: slideInRight 0.5s ease, fadeOut 0.5s ease 4.5s forwards;
+    max-width: 300px;
+}
+
+.achievement-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.achievement-notification .achievement-icon {
+    font-size: 28px;
+}
+
+.achievement-text h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.achievement-text p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Interactive Controls */
+.interactive-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.scene-navigation {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-btn {
+    background: rgba(255, 215, 0, 0.8);
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: #FFD700;
+    transform: translateY(-2px);
+}
+
+.nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#scene-info {
+    color: white;
+    font-weight: bold;
+}
+
+.interactive-options {
+    display: flex;
+    gap: 10px;
+}
+
+.option-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.option-btn:hover,
+.option-btn.active {
+    background: rgba(255, 215, 0, 0.8);
+    color: #000;
+    border-color: #FFD700;
+}
+
+/* Progress Panel */
+.progress-panel {
+    min-height: 150px;
+}
+
+.progress-bar {
+    background: rgba(255, 255, 255, 0.2);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Chat Panel */
+.chat-panel {
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 15px;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chat-message.user {
+    background: rgba(255, 215, 0, 0.2);
+    margin-left: 20px;
+}
+
+.chat-message.system {
+    background: rgba(102, 126, 234, 0.2);
+    margin-right: 20px;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.chat-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.chat-send {
+    background: #FFD700;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* VR/AR Controls */
+.vr-ar-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+    z-index: 30;
+}
+
+.vr-btn,
+.ar-btn {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.vr-btn:hover,
+.ar-btn:hover {
+    background: rgba(255, 215, 0, 0.8);
+    color: #000;
+}
+
+/* Voice Control Indicator */
+.voice-control-indicator {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: none;
+    z-index: 30;
+}
+
+.voice-control-indicator.listening {
+    display: block;
+    animation: pulse 1s infinite;
+}
+
+/* Gesture Control Overlay */
+.gesture-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 25;
+    pointer-events: none;
+}
+
+.gesture-indicator {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 2px solid #FFD700;
+    border-radius: 50%;
+    background: rgba(255, 215, 0, 0.2);
+    display: none;
+    animation: ripple 0.5s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .interactive-video-wrapper {
+        flex-direction: column;
+    }
+    
+    .video-sidebar {
+        min-width: auto;
+    }
+    
+    .achievement-panel,
+    .progress-panel,
+    .chat-panel {
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .interactive-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .scene-navigation {
+        justify-content: center;
+    }
+    
+    .interactive-options {
+        justify-content: center;
+    }
+    
+    .progress-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+/* Live Streaming Styles */
+.live-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff0000;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 30;
+}
+
+.live-indicator::before {
+    content: "●";
+    margin-right: 4px;
+    animation: pulse 1s infinite;
+}
+
+.viewer-count {
+    position: absolute;
+    top: 10px;
+    left: 100px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 30;
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 215, 0, 0.3);
+    border-top: 4px solid #FFD700;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Modal Styles */
+.commands-modal,
+.gesture-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.modal-header h3 {
+    color: #FFD700;
+    margin: 0;
+    font-size: 24px;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: #FFD700;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.close-modal:hover {
+    background: rgba(255, 215, 0, 0.2);
+}
+
+.modal-body {
+    padding: 20px;
+    color: white;
+}
+
+.command-categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.command-category h4 {
+    color: #FFD700;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.command-category ul {
+    list-style: none;
+    padding: 0;
+}
+
+.command-category li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.command-category li:last-child {
+    border-bottom: none;
+}
+
+.gesture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.gesture-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.gesture-item:hover {
+    transform: translateY(-5px);
+}
+
+.gesture-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.gesture-name {
+    color: #FFD700;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.gesture-action {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+.gesture-tips {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.gesture-tips h4 {
+    color: #FFD700;
+    margin-bottom: 15px;
+}
+
+.gesture-tips ul {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Voice and Gesture Control Styles */
+.voice-gesture-controls {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.voice-controls,
+.gesture-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.voice-btn,
+.gesture-btn {
+    background: rgba(255, 215, 0, 0.8);
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.voice-btn:hover,
+.gesture-btn:hover {
+    background: #FFD700;
+    transform: translateY(-2px);
+}
+
+.voice-btn:disabled,
+.gesture-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.voice-indicator {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.indicator-dot {
+    width: 8px;
+    height: 8px;
+    background: #ff0000;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+.gesture-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 25;
+}
+
+.control-help {
+    display: flex;
+    gap: 10px;
+}
+
+.help-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.help-btn:hover {
+    background: rgba(255, 215, 0, 0.8);
+    color: #000;
+}
+
+/* Feedback and Notification Styles */
+.command-feedback,
+.gesture-feedback {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #FFD700;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 2px solid #FFD700;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease;
+}
+
+.feedback-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.feedback-icon {
+    font-size: 20px;
+}
+
+/* Meditation and Spiritual Overlays */
+.meditation-overlay,
+.breathing-exercise-overlay,
+.wisdom-quote-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.meditation-session,
+.breathing-exercise,
+.wisdom-quote {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    color: white;
+    max-width: 500px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.meditation-timer {
+    font-size: 48px;
+    color: #FFD700;
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+.breathing-guide {
+    margin: 30px 0;
+}
+
+.breath-circle,
+.breathing-circle {
+    width: 100px;
+    height: 100px;
+    border: 4px solid #FFD700;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    transition: transform 4s ease-in-out;
+    background: rgba(255, 215, 0, 0.2);
+}
+
+.breathing-circle-container {
+    position: relative;
+    margin: 30px 0;
+}
+
+.breathing-instruction {
+    font-size: 24px;
+    color: #FFD700;
+    margin-top: 20px;
+}
+
+.end-meditation,
+.end-breathing,
+.close-quote {
+    background: #FFD700;
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.end-meditation:hover,
+.end-breathing:hover,
+.close-quote:hover {
+    background: #FFA500;
+    transform: translateY(-2px);
+}
+
+.quote-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.quote-text {
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 20px 0;
+    font-style: italic;
+}
+
+/* Poll and Interactive Event Styles */
+.poll-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.poll-container {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 500px;
+    text-align: center;
+    color: #000;
+}
+
+.poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.poll-option {
+    background: #FFD700;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.poll-option:hover {
+    background: #FFA500;
+    transform: translateY(-2px);
+}
+
+.poll-timer {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #ff0000;
+}
+
+/* Instructor Message */
+.instructor-message-overlay {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    animation: slideInRight 0.5s ease;
+}
+
+.instructor-message {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 350px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.instructor-avatar {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.instructor-content h4 {
+    color: #FFD700;
+    margin: 0 0 10px 0;
+}
+
+.close-instructor-message {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #FFD700;
+    font-size: 20px;
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Error and Notification Styles */
+.error-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 0, 0, 0.9);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    z-index: 10001;
+    max-width: 300px;
+    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+    animation: slideInRight 0.5s ease;
+}
+
+.error-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.error-icon {
+    font-size: 20px;
+}
+
+.close-error {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+/* Theater Mode */
+.theater-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.theater-environment {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.theater-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 1200px;
+}
+
+.theater-seats {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20%;
+    background: linear-gradient(to top, #000 0%, transparent 100%);
+}
+
+.exit-theater-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 215, 0, 0.8);
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* 360 Controls */
+.controls-360 {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    z-index: 30;
+}
+
+.rotation-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.horizontal-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.rotate-btn {
+    background: rgba(255, 215, 0, 0.8);
+    color: #000;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.rotate-btn:hover {
+    background: #FFD700;
+    transform: scale(1.1);
+}
+
+/* Unsupported and Error Messages */
+.unsupported-message,
+.error-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    color: #000;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 10001;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.message-content,
+.error-content {
+    max-width: 400px;
+}
+
+.message-content h3,
+.error-content h3 {
+    color: #ff0000;
+    margin-bottom: 15px;
+}
+
+.message-content button,
+.error-content button {
+    background: #FFD700;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+    
+    .command-categories {
+        grid-template-columns: 1fr;
+    }
+    
+    .gesture-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .meditation-session,
+    .breathing-exercise,
+    .wisdom-quote {
+        margin: 20px;
+        padding: 30px;
+    }
+    
+    .instructor-message {
+        max-width: 280px;
+    }
+    
+    .theater-screen {
+        width: 95%;
+    }
+}
