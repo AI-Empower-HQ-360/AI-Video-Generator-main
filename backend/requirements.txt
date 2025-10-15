@@ -17,7 +17,7 @@ Werkzeug==2.3.7
 black==23.7.0
 flake8==6.1.0
 matplotlib==3.7.2
-numpy==1.25.2
+numpy==2.3.4
 pandas==2.1.0
 psycopg2-binary==2.9.7
 pytest-cov==4.1.0
