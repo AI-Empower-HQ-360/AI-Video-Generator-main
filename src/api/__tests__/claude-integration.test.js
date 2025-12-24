@@ -246,7 +246,7 @@ describe('Claude Integration', () => {
       const callArgs = fetch.mock.calls[0][1];
       const body = JSON.parse(callArgs.body);
       
-      expect(body.message).toContain('Generate a explanation about karma in en language');
+      expect(body.message).toContain('Generate an explanation about karma in en language');
       expect(body.model).toBe('claude-3-sonnet');
       expect(body.max_tokens).toBe(1500);
       expect(body.temperature).toBe(0.8);

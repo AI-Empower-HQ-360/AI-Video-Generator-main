@@ -133,7 +133,8 @@ export async function generateSpiritualContent(topic, type = 'explanation', lang
       'Draw from various traditions while being inclusive and non-dogmatic.'
     ];
 
-    const prompt = `Generate a ${type} about ${topic} in ${language} language. 
+    const article = ['a', 'e', 'i', 'o', 'u'].includes(type[0].toLowerCase()) ? 'an' : 'a';
+    const prompt = `Generate ${article} ${type} about ${topic} in ${language} language. 
                    Make it authentic, inspirational, and accessible to modern readers.`;
 
     return await chatWithClaude(prompt, 'claude-3-sonnet', {
