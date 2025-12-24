@@ -20,6 +20,12 @@ global.Blob = class Blob {
 beforeEach(() => {
   jest.clearAllMocks();
   fetch.mockClear();
+  // Default fetch mock that resolves successfully
+  fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({}),
+    text: async () => ''
+  });
 });
 
 // Mock window.matchMedia

@@ -239,18 +239,24 @@ describe('Claude Integration', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: expect.stringContaining('Generate a explanation about karma in en language'),
-          model: 'claude-3-sonnet',
-          max_tokens: 1500,
-          temperature: 0.8,
-          system_prompts: expect.arrayContaining([
-            expect.stringContaining('wise spiritual teacher'),
-            expect.stringContaining('authentic, respectful'),
-            expect.stringContaining('inclusive and non-dogmatic')
-          ])
-        })
+        body: expect.any(String)
       });
+
+      // Parse the body to check its contents
+      const callArgs = fetch.mock.calls[0][1];
+      const body = JSON.parse(callArgs.body);
+      
+      expect(body.message).toContain('Generate a explanation about karma in en language');
+      expect(body.model).toBe('claude-3-sonnet');
+      expect(body.max_tokens).toBe(1500);
+      expect(body.temperature).toBe(0.8);
+      expect(body.system_prompts).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('wise spiritual teacher'),
+          expect.stringContaining('authentic, respectful'),
+          expect.stringContaining('inclusive and non-dogmatic')
+        ])
+      );
 
       expect(result).toEqual(mockResponse);
     });
