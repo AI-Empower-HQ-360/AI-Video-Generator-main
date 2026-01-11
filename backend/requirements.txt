@@ -48,3 +48,13 @@ openai>=1.0.0
 python-dotenv==1.0.0
 aiohttp==3.9.1
 asyncio==3.4.3
+
+# Video Processing Dependencies
+opencv-python==4.8.1.78
+moviepy==1.0.3
+imageio==2.34.0
+imageio-ffmpeg==0.4.9
+
+# Audio Processing (for TTS and subtitle generation)
+pydub==0.25.1
+SpeechRecognition==3.10.0

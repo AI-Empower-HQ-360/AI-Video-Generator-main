@@ -66,6 +66,7 @@ from api.sessions import sessions_bp
 from api.slokas import slokas_bp
 from api.durable_endpoints import durable_bp
 from api.whisper_endpoints import whisper_bp
+from api.video_endpoints import video_bp
 
 # Register blueprints with rate limiting
 app.register_blueprint(gurus_bp, url_prefix='/api/gurus')
@@ -73,7 +74,8 @@ app.register_blueprint(gurus_bp, url_prefix='/api')  # Also register at /api for
 app.register_blueprint(users_bp, url_prefix='/api/users') 
 app.register_blueprint(sessions_bp, url_prefix='/api/sessions')
 app.register_blueprint(slokas_bp, url_prefix='/api/slokas')
-app.register_blueprint(whisper_bp, url_prefix='/api/whisper')  # New Whisper endpoints
+app.register_blueprint(whisper_bp, url_prefix='/api/whisper')  # Whisper endpoints
+app.register_blueprint(video_bp, url_prefix='/api/video')      # Video processing endpoints
 app.register_blueprint(durable_bp)  # No url_prefix as it has its own
 
 @app.route('/')
