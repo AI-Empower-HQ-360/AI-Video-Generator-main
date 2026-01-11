@@ -3,58 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered spiritual guidance platform with expert gurus for meditation, yoga, and spiritual wisdom">
     <title>AI Empower Heart 360 - Spiritual Intelligence Revolution</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5568 0%, #553c9a 100%);
             min-height: 100vh;
-            color: white;
-            font-family: Arial, sans-serif;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px;
+            line-height: 1.6;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; padding: 40px 0; }
-        .header h1 { font-size: 3em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 10px; }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        
+        .header { 
+            text-align: center; 
+            padding: 40px 0; 
+        }
+        
+        .header h1 { 
+            font-size: clamp(2rem, 5vw, 3rem);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); 
+            margin-bottom: 10px; 
+        }
+        
+        .header p {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            margin-top: 10px;
+        }
+        
         .spiritual-platform {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             padding: 30px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
             margin: 40px 0;
+            border: 1px solid rgba(255,255,255,0.2);
         }
+        
         .guru-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
             margin: 30px 0;
         }
+        
         .guru-card {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
             padding: 20px;
             border-radius: 15px;
             cursor: pointer;
-            transition: transform 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
         }
-        .guru-card:hover { transform: translateY(-5px); }
-        .guru-card.active { border-color: #FFD700; background: rgba(255,215,0,0.3); }
+        
+        .guru-card:hover, 
+        .guru-card:focus { 
+            transform: translateY(-5px); 
+            border-color: #ffd700;
+            outline: none;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+        
+        .guru-card.active { 
+            border-color: #FFD700; 
+            background: rgba(255,215,0,0.35);
+            box-shadow: 0 8px 16px rgba(255,215,0,0.3);
+        }
+        
+        .guru-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .guru-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
         #question-area {
             margin: 30px 0;
             display: none;
         }
+        
+        #question-area.visible {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
         #spiritual-question {
             width: 100%;
-            height: 100px;
+            height: 120px;
             padding: 15px;
             border-radius: 10px;
-            border: none;
+            border: 2px solid rgba(255,255,255,0.3);
             font-size: 16px;
             resize: vertical;
-            margin: 10px 0;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            line-height: 1.5;
         }
+        
+        #spiritual-question:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255,215,0,0.3);
+        }
+        
         .ask-button {
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            background: linear-gradient(45deg, #e53e3e, #38b2ac);
             color: white;
             border: none;
             padding: 15px 30px;
@@ -62,110 +136,356 @@
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            min-height: 44px;
         }
-        .ask-button:hover { transform: translateY(-2px); }
+        
+        .ask-button:hover, 
+        .ask-button:focus { 
+            transform: translateY(-2px); 
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,215,0,0.5);
+        }
+        
+        .ask-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
         #response-area {
             margin-top: 20px;
             padding: 20px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
             border-radius: 12px;
             display: none;
             line-height: 1.6;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        #response-area.visible {
+            display: block;
+        }
+        
+        .error-message {
+            background: rgba(220, 38, 38, 0.2);
+            border: 1px solid rgba(220, 38, 38, 0.5);
+            color: #fecaca;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #ffd700;
+        }
+        
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: #000;
+            color: #fff;
+            padding: 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        
+        .skip-link:focus {
+            top: 6px;
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        /* Media queries for responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .spiritual-platform {
+                padding: 20px;
+            }
+            
+            .guru-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .guru-card {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .guru-card h3 {
+                font-size: 1.1rem;
+            }
+            
+            .ask-button {
+                width: 100%;
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+        }
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .guru-card {
+                border: 2px solid #fff;
+            }
+            
+            .guru-card:hover,
+            .guru-card:focus {
+                border-color: #ffd700;
+                background: rgba(255,255,255,0.4);
+            }
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
         }
     </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
     <div class="container">
-        <div class="header">
+        <header class="header">
             <h1>🕉️ AI Empower Heart 360</h1>
             <p>Awakening Your Inner Self Through Ancient Wisdom & AI Guidance</p>
-        </div>
+        </header>
         
-        <div class="spiritual-platform">
+        <main id="main-content" class="spiritual-platform" role="main">
             <h2 style="text-align: center; margin-bottom: 20px;">Choose Your Spiritual Guide</h2>
             
-            <div class="guru-grid">
-                <div class="guru-card" onclick="selectGuru('spiritual')">
+            <section class="guru-grid" role="group" aria-label="Spiritual guides selection">
+                <button class="guru-card" onclick="selectGuru('spiritual')" 
+                        aria-describedby="spiritual-desc" tabindex="0"
+                        role="button" aria-pressed="false">
                     <h3>🙏 Spiritual Guru</h3>
-                    <p>Soul consciousness & eternal identity</p>
-                </div>
-                <div class="guru-card" onclick="selectGuru('sloka')">
+                    <p id="spiritual-desc">Soul consciousness & eternal identity</p>
+                </button>
+                
+                <button class="guru-card" onclick="selectGuru('sloka')" 
+                        aria-describedby="sloka-desc" tabindex="0"
+                        role="button" aria-pressed="false">
                     <h3>🕉️ Sloka Guru</h3>
-                    <p>Sanskrit verses & sacred wisdom</p>
-                </div>
-                <div class="guru-card" onclick="selectGuru('meditation')">
+                    <p id="sloka-desc">Sanskrit verses & sacred wisdom</p>
+                </button>
+                
+                <button class="guru-card" onclick="selectGuru('meditation')" 
+                        aria-describedby="meditation-desc" tabindex="0"
+                        role="button" aria-pressed="false">
                     <h3>🧘 Meditation Guru</h3>
-                    <p>Inner peace & emotional healing</p>
-                </div>
-                <div class="guru-card" onclick="selectGuru('bhakti')">
+                    <p id="meditation-desc">Inner peace & emotional healing</p>
+                </button>
+                
+                <button class="guru-card" onclick="selectGuru('bhakti')" 
+                        aria-describedby="bhakti-desc" tabindex="0"
+                        role="button" aria-pressed="false">
                     <h3>💝 Bhakti Guru</h3>
-                    <p>Devotion & divine love</p>
-                </div>
-                <div class="guru-card" onclick="selectGuru('karma')">
+                    <p id="bhakti-desc">Devotion & divine love</p>
+                </button>
+                
+                <button class="guru-card" onclick="selectGuru('karma')" 
+                        aria-describedby="karma-desc" tabindex="0"
+                        role="button" aria-pressed="false">
                     <h3>⚖️ Karma Guru</h3>
-                    <p>Ethics & dharma</p>
-                </div>
-                <div class="guru-card" onclick="selectGuru('yoga')">
+                    <p id="karma-desc">Ethics & dharma</p>
+                </button>
+                
+                <button class="guru-card" onclick="selectGuru('yoga')" 
+                        aria-describedby="yoga-desc" tabindex="0"
+                        role="button" aria-pressed="false">
                     <h3>🧘‍♀️ Yoga Guru</h3>
-                    <p>Breath & energy alignment</p>
-                </div>
-            </div>
+                    <p id="yoga-desc">Breath & energy alignment</p>
+                </button>
+            </section>
             
-            <div id="question-area">
-                <h3 id="selected-guru-name">Ask Your Question:</h3>
-                <textarea id="spiritual-question" placeholder="Enter your spiritual question here..."></textarea>
-                <button class="ask-button" onclick="askSpiritual()">Get Spiritual Guidance 🙏</button>
-            </div>
+            <section id="question-area" aria-live="polite">
+                <form id="spiritual-form" onsubmit="askSpiritual(event)">
+                    <div class="form-group">
+                        <label for="spiritual-question" class="form-label" id="selected-guru-name">
+                            Ask Your Question:
+                        </label>
+                        <textarea id="spiritual-question" 
+                                name="spiritual-question"
+                                placeholder="Enter your spiritual question here..."
+                                aria-required="true"
+                                aria-describedby="question-help"></textarea>
+                        <div id="question-help" class="sr-only">
+                            Enter your spiritual question to receive guidance from your selected guru
+                        </div>
+                    </div>
+                    <button type="submit" class="ask-button" id="ask-button" disabled 
+                            aria-describedby="button-help">
+                        Get Spiritual Guidance 🙏
+                    </button>
+                    <div id="button-help" class="sr-only">
+                        Click to submit your question to the selected spiritual guru
+                    </div>
+                </form>
+            </section>
             
-            <div id="response-area"></div>
-        </div>
+            <section id="response-area" role="region" aria-label="Spiritual guidance response" aria-live="polite">
+            </section>
+        </main>
     </div>
 
     <script>
         let selectedGuruType = '';
         
+        // Initialize accessibility features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add keyboard navigation to guru cards
+            const guruCards = document.querySelectorAll('.guru-card');
+            guruCards.forEach(card => {
+                card.addEventListener('keydown', handleGuruCardKeydown);
+            });
+            
+            // Add form validation
+            const questionTextarea = document.getElementById('spiritual-question');
+            const askButton = document.getElementById('ask-button');
+            
+            questionTextarea.addEventListener('input', function() {
+                const hasText = this.value.trim().length > 0;
+                const hasSelectedGuru = selectedGuruType !== '';
+                askButton.disabled = !(hasText && hasSelectedGuru);
+                
+                // Update ARIA attributes
+                if (hasText) {
+                    this.setAttribute('aria-invalid', 'false');
+                } else {
+                    this.setAttribute('aria-invalid', 'true');
+                }
+            });
+            
+            // Announce page load to screen readers
+            announceToScreenReader('AI Empower Heart 360 spiritual guidance platform loaded. Choose a spiritual guide to begin.');
+        });
+        
+        function handleGuruCardKeydown(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                const guruType = getGuruTypeFromCard(event.target);
+                if (guruType) {
+                    selectGuru(guruType);
+                }
+            }
+        }
+        
+        function getGuruTypeFromCard(cardElement) {
+            const onclick = cardElement.getAttribute('onclick');
+            if (onclick) {
+                const match = onclick.match(/selectGuru\('([^']+)'\)/);
+                return match ? match[1] : null;
+            }
+            return null;
+        }
+        
         function selectGuru(guruType) {
             selectedGuruType = guruType;
             
-            // Update visual selection
-            document.querySelectorAll('.guru-card').forEach(card => {
+            // Update visual selection and ARIA states
+            const guruCards = document.querySelectorAll('.guru-card');
+            guruCards.forEach(card => {
                 card.classList.remove('active');
+                card.setAttribute('aria-pressed', 'false');
             });
-            event.target.closest('.guru-card').classList.add('active');
             
-            // Show question area
-            document.getElementById('question-area').style.display = 'block';
-            document.getElementById('spiritual-question').focus();
+            const selectedCard = document.querySelector(`[onclick="selectGuru('${guruType}')"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('active');
+                selectedCard.setAttribute('aria-pressed', 'true');
+                selectedCard.focus();
+            }
+            
+            // Show question area with proper accessibility
+            const questionArea = document.getElementById('question-area');
+            questionArea.style.display = 'block';
+            questionArea.classList.add('visible');
+            
+            // Focus on textarea and update labels
+            const questionTextarea = document.getElementById('spiritual-question');
+            questionTextarea.focus();
             
             const guruNames = {
                 'spiritual': '🙏 Spiritual Guru',
-                'sloka': '🕉️ Sloka Guru',
+                'sloka': '🕉️ Sloka Guru', 
                 'meditation': '🧘 Meditation Guru',
                 'bhakti': '💝 Bhakti Guru',
                 'karma': '⚖️ Karma Guru',
                 'yoga': '🧘‍♀️ Yoga Guru'
             };
             
-            document.getElementById('selected-guru-name').textContent = `Ask ${guruNames[guruType]}:`;
+            const selectedGuruName = document.getElementById('selected-guru-name');
+            selectedGuruName.textContent = `Ask ${guruNames[guruType]}:`;
+            
+            // Update button state
+            const askButton = document.getElementById('ask-button');
+            const hasText = questionTextarea.value.trim().length > 0;
+            askButton.disabled = !hasText;
+            
+            // Announce selection to screen readers
+            announceToScreenReader(`${guruNames[guruType]} selected. You can now enter your spiritual question.`);
         }
         
-        async function askSpiritual() {
+        async function askSpiritual(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            
             const question = document.getElementById('spiritual-question').value.trim();
             const responseArea = document.getElementById('response-area');
+            const askButton = document.getElementById('ask-button');
             
+            // Validation with accessible error messages
             if (!selectedGuruType) {
-                alert('Please select a guru first');
+                showError('Please select a spiritual guide first');
                 return;
             }
             
             if (!question) {
-                alert('Please enter your spiritual question');
+                showError('Please enter your spiritual question');
+                document.getElementById('spiritual-question').focus();
                 return;
             }
             
+            // Clear any previous errors
+            clearErrors();
+            
+            // Show loading state
+            askButton.disabled = true;
+            askButton.textContent = 'Receiving Guidance...';
+            askButton.setAttribute('aria-label', 'Please wait while receiving spiritual guidance');
+            
             responseArea.style.display = 'block';
-            responseArea.innerHTML = '<div style="text-align: center; color: #FFD700;">🧘‍♂️ The guru is contemplating your question...</div>';
+            responseArea.classList.add('visible');
+            responseArea.innerHTML = '<div class="loading" role="status" aria-live="polite">🧘‍♂️ The guru is contemplating your question...</div>';
+            
+            // Announce loading to screen readers
+            announceToScreenReader('Your question has been submitted. Please wait while the guru provides guidance.');
             
             try {
                 // REPLACE WITH YOUR ACTUAL CLOUD SHELL API URL
@@ -181,19 +501,75 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    responseArea.innerHTML = `
+                    const guruResponse = `
                         <div style="border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 15px; margin-bottom: 15px;">
-                            <strong style="color: #FFD700;">${data.guru_name} responds:</strong>
+                            <strong style="color: #FFD700;" role="heading" aria-level="3">${data.guru_name} responds:</strong>
                         </div>
-                        <div>${data.response.replace(/\n/g, '<br><br>')}</div>
+                        <div role="article" aria-label="Spiritual guidance response">${data.response.replace(/\n/g, '<br><br>')}</div>
                     `;
+                    responseArea.innerHTML = guruResponse;
+                    announceToScreenReader(`Spiritual guidance received from ${data.guru_name}`);
                 } else {
-                    responseArea.innerHTML = '<div style="color: #FFB6C1;">🙏 The guru is in deep meditation. Please try again.</div>';
+                    const errorMessage = '<div style="color: #FFB6C1;" role="alert">🙏 The guru is in deep meditation. Please try again.</div>';
+                    responseArea.innerHTML = errorMessage;
+                    announceToScreenReader('The guru is currently unavailable. Please try again.');
                 }
             } catch (error) {
-                responseArea.innerHTML = '<div style="color: #FFB6C1;">🌸 Connection interrupted. Please ensure the API is running.</div>';
+                const errorMessage = '<div style="color: #FFB6C1;" role="alert">🌸 Connection interrupted. Please ensure the API is running.</div>';
+                responseArea.innerHTML = errorMessage;
+                announceToScreenReader('Connection error occurred. Please check your connection and try again.');
+            } finally {
+                // Reset button state
+                askButton.disabled = false;
+                askButton.textContent = 'Get Spiritual Guidance 🙏';
+                askButton.setAttribute('aria-label', 'Click to submit your question to the selected spiritual guru');
+                
+                // Focus on response area for screen readers
+                responseArea.focus();
+                responseArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
+        
+        function showError(message) {
+            clearErrors();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.setAttribute('role', 'alert');
+            errorDiv.setAttribute('aria-live', 'assertive');
+            errorDiv.textContent = message;
+            
+            const questionArea = document.getElementById('question-area');
+            questionArea.insertBefore(errorDiv, questionArea.firstChild);
+            
+            announceToScreenReader(message);
+        }
+        
+        function clearErrors() {
+            const errors = document.querySelectorAll('.error-message');
+            errors.forEach(error => error.remove());
+        }
+        
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = message;
+            
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+        
+        // Handle form submission via Enter key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && event.target.id === 'spiritual-question' && event.ctrlKey) {
+                event.preventDefault();
+                askSpiritual();
+            }
+        });
     </script>
 </body>
 </html>
