@@ -71,3 +71,25 @@ logs/
 dist/
 build/
 *.egg-info/
+
+# Automation service temporary files
+/tmp/
+*_results.json
+*_test_results.json
+*_report.json
+automation_test_report.json
+
+# Backup files
+backup_*
+restore_*
+/backups/
+
+# Performance test outputs
+performance_*
+baseline_*
+optimization_*
+
+# Video processing temporary files
+thumbnails/
+processed_videos/
+video_cache/
