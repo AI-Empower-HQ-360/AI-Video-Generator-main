@@ -4,6 +4,7 @@ Handles YouTube video operations including transcript fetching and video informa
 """
 
 import os
+import re
 import logging
 from typing import Dict, List, Optional, Any
 import requests
@@ -38,8 +39,6 @@ class YouTubeService:
         Returns:
             Video ID if found, None otherwise
         """
-        import re
-        
         patterns = [
             r'(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)',
             r'youtube\.com\/embed\/([^&\n?#]+)',

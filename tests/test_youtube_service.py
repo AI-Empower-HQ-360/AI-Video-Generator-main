@@ -122,7 +122,7 @@ class TestYouTubeService:
         assert result['status'] == 'not_found'
         assert 'not found' in result['error']
     
-    @patch('backend.services.youtube_service.YouTubeTranscriptApi.list')
+    @patch('youtube_transcript_api.YouTubeTranscriptApi.list')
     def test_get_transcript_success(self, mock_list):
         """Test successful transcript retrieval."""
         # Mock transcript
@@ -145,7 +145,7 @@ class TestYouTubeService:
         assert result['is_auto_generated'] is False
         assert len(result['segments']) == 2
     
-    @patch('backend.services.youtube_service.YouTubeTranscriptApi.list')
+    @patch('youtube_transcript_api.YouTubeTranscriptApi.list')
     def test_get_transcript_auto_generated(self, mock_list):
         """Test retrieval of auto-generated transcript."""
         from youtube_transcript_api._errors import NoTranscriptFound
@@ -169,7 +169,7 @@ class TestYouTubeService:
         assert result['is_auto_generated'] is True
         assert 'Auto generated text' in result['text']
     
-    @patch('backend.services.youtube_service.YouTubeTranscriptApi.list')
+    @patch('youtube_transcript_api.YouTubeTranscriptApi.list')
     def test_get_transcript_disabled(self, mock_list):
         """Test transcript retrieval when transcripts are disabled."""
         from youtube_transcript_api._errors import TranscriptsDisabled
@@ -181,7 +181,7 @@ class TestYouTubeService:
         assert result['status'] == 'disabled'
         assert 'disabled' in result['error']
     
-    @patch('backend.services.youtube_service.YouTubeTranscriptApi.list')
+    @patch('youtube_transcript_api.YouTubeTranscriptApi.list')
     def test_get_transcript_video_unavailable(self, mock_list):
         """Test transcript retrieval when video is unavailable."""
         from youtube_transcript_api._errors import VideoUnavailable
