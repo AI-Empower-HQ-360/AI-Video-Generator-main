@@ -20,6 +20,7 @@ AI Empower Heart is a spiritual guidance platform powered by artificial intellig
 - ✅ **File Upload Security**: Type validation and size limits
 - ✅ **API Security**: OpenAI key validation and secure practices
 - ✅ **Security Monitoring**: Comprehensive logging and threat detection
+- ✅ **YouTube Integration**: Video information retrieval and transcript fetching
 
 See [Security Documentation](docs/security.md) for detailed implementation details.
 
@@ -48,10 +49,39 @@ python demo_security.py
 
 ### Testing
 
-- Run Python tests: `pytest`
-- Run linting: `flake8`
+Run the comprehensive test suite:
 
-## Environment Setup
+**Python Unit Tests:**
+```bash
+# Run all tests
+pytest
+
+# Run specific test suite
+pytest tests/test_youtube_service.py
+pytest tests/test_ai_chat.py
+pytest tests/test_authentication.py
+
+# Run with coverage report
+pytest --cov=backend --cov-report=html
+```
+
+**End-to-End Tests:**
+```bash
+# Install Playwright browsers (first time only)
+npx playwright install
+
+# Run E2E tests
+npm run test:e2e
+
+# Run E2E tests with UI
+npm run test:e2e:ui
+```
+
+For complete testing documentation, see [docs/TESTING.md](docs/TESTING.md).
+
+### Security Testing
+
+Run the security test suite:
 
 1. Copy the example environment file:
 
@@ -61,6 +91,7 @@ python demo_security.py
 
 2. Configure your environment variables in `.env`:
    - Set your OpenAI API key (use proper `sk-` format)
+   - Set your YouTube API key for video integration
    - Set a strong secret key for JWT tokens
    - Configure rate limiting settings
    - Set secure session configurations
