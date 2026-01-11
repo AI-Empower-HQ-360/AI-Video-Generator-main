@@ -48,3 +48,7 @@ openai>=1.0.0
 python-dotenv==1.0.0
 aiohttp==3.9.1
 asyncio==3.4.3
+
+# YouTube Integration
+youtube-transcript-api==0.6.1
+google-api-python-client==2.108.0
