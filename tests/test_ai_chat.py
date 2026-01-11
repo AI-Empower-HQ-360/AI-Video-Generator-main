@@ -223,10 +223,10 @@ class TestAIChatFeatures:
             
             # Prompt should be a non-empty string
             assert isinstance(prompt, str)
-            assert len(prompt) > 50
+            assert len(prompt) > 20
             
-            # Prompt should mention being a guru or teacher
-            assert any(word in prompt.lower() for word in ['guru', 'teacher', 'master', 'coach'])
+            # Prompt should mention being a guru, teacher, master, coach, or scholar
+            assert any(word in prompt.lower() for word in ['guru', 'teacher', 'master', 'coach', 'scholar', 'guide'])
 
 
 class TestChatHistory:

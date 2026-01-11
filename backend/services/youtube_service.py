@@ -131,7 +131,7 @@ class YouTubeService:
         
         try:
             # Try to fetch transcript
-            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            transcript_list = YouTubeTranscriptApi.list(video_id)
             
             # Try manual transcripts first
             try:
