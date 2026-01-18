@@ -36,7 +36,7 @@ jobs:
           category: "/language:javascript,python"
 
       - name: Run Dependency Review
-        uses: actions/dependency-review-action@v3
+        uses: actions/dependency-review-action@v4
         with:
           allow-licenses: MIT, Apache-2.0, BSD-3-Clause
 
